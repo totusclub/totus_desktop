@@ -1,0 +1,44 @@
+/* Адаптация @tosmedia/ai-assistant (Tailwind v4, только светлая тема) под токены Totus и Dark Mode.
+   Утилиты пакета читают переменные --color-*, поэтому достаточно переопределить их под .totus-ai-root. */
+.totus-ai-root {
+  --font-sans: var(--font);
+  --font-display: var(--font);
+  --color-paper: var(--surface);
+  --color-page: var(--background);
+  --color-sand: var(--background-secondary);
+  --color-ink: var(--text);
+  --color-subtle: var(--text-tertiary);
+  --color-faint: var(--text-disabled);
+  --color-line: var(--border);
+  --color-coral: #FE732E;
+  --color-coral-deep: #EA5F1A;
+}
+[data-theme='dark'] .totus-ai-root {
+  --color-sea-soft: #12303D;
+}
+/* Плавающий виджет: не перекрывать рейл и учитывать title bar */
+.totus-ai-root .fixed.bottom-5.right-5 { bottom: 20px; right: 20px; }
+
+/* Страница Totus AI (Figma «Desktop / Totus AI»): чат 800 по центру */
+.ai-page { display: flex; flex-direction: column; height: calc(100vh - var(--title-bar-h)); }
+.ai-page__scroll { flex: 1; overflow-y: auto; padding: 8px var(--content-pad) 16px; }
+.ai-page__col { width: 800px; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.ai-page__composer { width: 800px; max-width: 100%; margin: 0 auto; padding: 8px var(--content-pad) 24px; display: flex; flex-direction: column; gap: 10px; }
+.ai-composer { display: flex; align-items: flex-end; gap: 12px; }
+.ai-composer__input { flex: 1; resize: none; min-height: 48px; max-height: 160px; padding: 13px 20px; border-radius: 24px; background: var(--background-secondary); border: 1px solid var(--border); color: var(--text); outline: none; user-select: text; line-height: 20px; }
+.ai-composer__input:focus { border-color: var(--brand); }
+.ai-composer__btn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.ai-composer__btn--send { background: var(--brand); color: #fff; }
+.ai-composer__btn--send:disabled { opacity: .5; cursor: default; }
+.ai-composer__btn--ghost { background: var(--background-secondary); border: 1px solid var(--border); color: var(--text); }
+.ai-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-tertiary); }
+.ai-status__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.ai-status__dot--off { background: var(--text-disabled); }
+.ai-typing { display: flex; align-items: center; gap: 8px; color: var(--text-tertiary); font-size: 13px; padding-left: 48px; }
+.ai-chats { display: flex; gap: 8px; flex-wrap: wrap; }
+.ai-chat-pill { padding: 6px 12px; border-radius: 999px; background: var(--background-secondary); border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-chat-pill--active { border-color: var(--brand); color: var(--brand); }
+.ai-msg-row { display: flex; gap: 12px; align-items: flex-start; }
+.ai-msg-row--user { justify-content: flex-end; }
+.ai-msg-row__avatar { flex: none; }
+.ai-disclaimer { font-size: 11px; color: var(--text-disabled); text-align: center; }
