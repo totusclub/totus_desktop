@@ -256,11 +256,11 @@ function offerMatchesConfirmability(offer: Record<string, unknown>, selectedIds:
 }
 
 function countOffersInRooms(rooms: unknown[]): number {
-  return rooms.reduce((total, room) => {
+  return rooms.reduce<number>((total, room) => {
     const offers = (room as { offers?: Record<string, unknown[]> })?.offers ?? {};
     return (
       total +
-      Object.values(offers).reduce(
+      Object.values(offers).reduce<number>(
         (groupTotal, offerList) => groupTotal + (Array.isArray(offerList) ? offerList.length : 0),
         0,
       )

@@ -56,11 +56,11 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         // New API might not return id, or might return it differently
-        state.userId = action.payload?.id || action.payload?.userId || null;
+        state.userId = (action.payload as any)?.id || (action.payload as any)?.userId || null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = (action.payload as any);
       })
       .addCase(verifyCode.pending, state => {
         state.loading = true;
@@ -73,7 +73,7 @@ const authSlice = createSlice({
       })
       .addCase(verifyCode.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = (action.payload as any);
       })
       .addCase(refreshToken.pending, state => {
         state.loading = true;
@@ -83,8 +83,8 @@ const authSlice = createSlice({
         // const decoded = jwtDecode(action.payload.accessToken);
         // console.log('asd',action.payload)
         state.loading = false;
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
+        state.accessToken = (action.payload as any).accessToken;
+        state.refreshToken = (action.payload as any).refreshToken;
       })
       .addCase(refreshToken.rejected, (state, action) => {
         state.loading = false;
@@ -97,7 +97,7 @@ const authSlice = createSlice({
       .addCase(signupUser.fulfilled, (state, action) => {
         state.loading = false;
         // New API might not return id, or might return it differently
-        state.userId = action.payload?.id || action.payload?.userId || null;
+        state.userId = (action.payload as any)?.id || (action.payload as any)?.userId || null;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.loading = false;
@@ -108,12 +108,12 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(verificationSignup.fulfilled, (state, action) => {
-        const accessToken = action.payload?.accessToken;
+        const accessToken = (action.payload as any)?.accessToken;
         if (!accessToken || typeof accessToken !== 'string') {
           console.error('[AuthSlice] verificationSignup - Invalid accessToken:', {
             accessToken,
             type: typeof accessToken,
-            payload: action.payload,
+            payload: (action.payload as any),
           });
           state.loading = false;
           state.error = 'Invalid token received from server';
@@ -126,7 +126,7 @@ const authSlice = createSlice({
         state.userId = decoded.id;
         state.fullAuth = false;
           state.accessToken = accessToken;
-          state.refreshToken = action.payload?.refreshToken;
+          state.refreshToken = (action.payload as any)?.refreshToken;
         } catch (decodeError: any) {
           console.error('[AuthSlice] verificationSignup - Error decoding token:', decodeError);
           state.loading = false;

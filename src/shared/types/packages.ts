@@ -26,3 +26,6 @@ export type PackageDetails = {
   flights?: unknown[];
   [key: string]: unknown;
 };
+
+// Desktop: тип из types/packages/index.ts (в RN резолвится через Metro).
+export type { ActualizePackageFlightParams } from './packages/index';

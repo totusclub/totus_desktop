@@ -18,7 +18,8 @@ export interface SearchParams {
   page_number?: number;
   page_limit?: number;
   sort_by?: string;
-  
+  filter_meals?: string;
+  filter_price_max?: string;
 }
 
 export interface FilterParams {

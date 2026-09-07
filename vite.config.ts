@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 // Renderer (React) — собирается в dist/, Electron грузит index.html через file://
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  define: { __DEV__: JSON.stringify(mode !== 'production') },
   plugins: [react()],
   base: './',
   root: '.',
@@ -17,4 +18,4 @@ export default defineConfig({
   build: { outDir: 'dist', emptyOutDir: true, sourcemap: false, target: 'chrome128' },
   optimizeDeps: { include: ['@tosmedia/ai-assistant'] },
   test: { environment: 'jsdom', globals: true },
-} as any);
+}) as any);
