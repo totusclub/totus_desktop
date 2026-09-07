@@ -1,0 +1,67 @@
+/* Orders / Order details — порт screens/orders + component/orders/** (Figma «Desktop / Orders», «Order details»). */
+
+.orders-grid { align-items: start; }
+.orders-refresh { width: 40px; height: 40px; border-radius: 10px; background: var(--background-secondary); display: grid; place-items: center; color: var(--text); }
+.orders-refresh:hover:not(:disabled) { background: var(--background-tertiary); }
+.orders-refresh:disabled { color: var(--text-disabled); cursor: default; }
+.orders-refresh--spinning svg { animation: orders-spin .9s linear infinite; }
+@keyframes orders-spin { to { transform: rotate(360deg); } }
+.orders-empty { padding-top: 80px; }
+.orders-empty__text { font-size: 15px; color: var(--text-secondary); }
+.orders-error { position: sticky; bottom: 16px; padding: 12px; border-radius: 12px; border: 1px solid var(--error); background: var(--surface); text-align: center; font-size: 14px; }
+
+/* Карточка заказа (список) */
+.order-card { border-radius: 20px; padding: 16px; display: flex; flex-direction: column; border-bottom: 1px solid transparent; }
+.order-card--skeleton { gap: 8px; }
+.order-card__body { display: flex; flex-direction: column; width: 100%; text-align: left; color: var(--text); cursor: pointer; }
+.order-card__header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.order-card__title { font-size: 16px; font-weight: 500; line-height: 20px; color: var(--text); flex: 1; min-width: 0; }
+.order-card__id { color: var(--text-tertiary); }
+.order-status { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; color: #FFFFFF; white-space: nowrap; flex: none; }
+.order-card__date { font-size: 14px; line-height: 18px; color: var(--text-tertiary); margin-top: 4px; }
+.order-card__price { font-size: 14px; font-weight: 500; color: var(--text); margin-top: 4px; }
+.order-card__payment { font-size: 14px; line-height: 18px; color: var(--text-tertiary); margin-top: 4px; }
+.order-card__divider { margin: 8px 0 20px; }
+.order-card__hotel { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); }
+.order-card__period { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text-tertiary); margin: 8px 0; }
+.order-card__departure { font-size: 14px; color: var(--text); margin-bottom: 8px; }
+.order-card__tourists { font-size: 13px; color: var(--text-tertiary); }
+.order-card__tourists-list { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text-disabled); }
+.order-card__pay { width: 100%; margin-top: 16px; }
+
+/* Детали заказа */
+.order-details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.order-details__card { border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.order-details__card .order-card__header { margin-bottom: 0; }
+.order-panel { background: var(--background-secondary); border: 1px solid var(--border-secondary); border-bottom: 1px solid var(--brand); border-radius: 16px; padding: 4px 16px; }
+.order-panel__section { padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.order-panel__section--last { border-bottom: 0; }
+.order-panel__title { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); margin-bottom: 4px; }
+.order-panel__subtitle { font-size: 13px; line-height: 18px; color: var(--text-tertiary); }
+.order-panel__tourists { display: flex; flex-direction: column; gap: 4px; }
+.order-panel__amount { font-size: 14px; font-weight: 500; color: var(--text); }
+
+/* Документы */
+.order-docs { background: var(--background-secondary); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.order-docs__head { display: flex; align-items: center; gap: 8px; color: var(--text); }
+.order-docs__title { font-size: 16px; font-weight: 600; }
+.order-docs__description { font-size: 14px; line-height: 20px; color: var(--text-tertiary); }
+.order-docs__list { margin-top: 8px; border-radius: 12px; background: var(--card-background); overflow: hidden; }
+.order-docs__row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; text-align: left; color: var(--text); border-bottom: 1px solid var(--divider); }
+.order-docs__row:last-child { border-bottom: 0; }
+.order-docs__row:hover { background: var(--background-tertiary); }
+.order-docs__name { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Секции «Самое важное» / «Отель и номер» */
+.order-section { display: flex; flex-direction: column; gap: 8px; }
+.order-section__header { font-size: 14px; line-height: 18px; color: var(--text); }
+.order-info-panel { background: var(--background-secondary); border-radius: 16px; padding: 0 16px; }
+.order-info { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; width: 100%; text-align: left; color: var(--text); }
+.order-info--btn { cursor: pointer; }
+.order-info--btn:hover .order-info__value { color: var(--brand); }
+.order-info__left { flex: 1; min-width: 0; }
+.order-info__label { font-size: 16px; color: var(--text-tertiary); margin-bottom: 4px; }
+.order-info__values { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.order-info__value { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; line-height: 20px; color: var(--text); }
+.order-info__right { font-size: 15px; font-weight: 500; color: var(--text); white-space: nowrap; }
+.order-info__arrow { color: var(--text); flex: none; }
