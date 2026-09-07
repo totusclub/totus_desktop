@@ -170,14 +170,16 @@ async function registerDeviceWithBackend(deviceId: string, loyaltyId: string | n
     socket?.emit('registerDevice', { deviceId });
     return;
   }
-  // TODO(voip): в приложении voipToken — это APNs/FCM push-токен, platform — 'ios'|'android'.
-  // Для десктопа отправляем deviceId как voipToken и platform 'desktop'; если calling_api_v2
-  // валидирует platform/token — согласовать с бэкендом (регистрация нужна только для
-  // идентификации fromDeviceId в звонке, пуши десктопу не нужны).
+  // Регистрируемся как web-клиент — ровно так же, как панель агента calling_v2
+  // (`voipToken: 'web', platform: 'web'`): calling_api_v2 знает только ios | android | web.
+  // Раньше отправляли deviceId (UUID) как voipToken и platform 'desktop' — сервер при
+  // резолве по БД принимал такой токен за FCM-токен Android и пытался слать push
+  // («The registration token is not a valid FCM registration token»).
+  // Пуши десктопу не нужны: входящие приходят по сокету (offer / call-state).
   const response = await voipFetch(`${BASE_URL}/api/register-device`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ deviceId, voipToken: deviceId, platform: 'desktop', loyaltyId }),
+    body: JSON.stringify({ deviceId, voipToken: 'web', platform: 'web', loyaltyId }),
   });
   if (!response.ok) {
     const errorText = await response.text().catch(() => '');
@@ -666,6 +668,11 @@ export async function startOutgoingVoiceCallByLoyaltyId(targetLoyaltyId: string,
         errorMessage = errorJson.error || errorMessage;
       } catch {
         errorMessage = errorText || errorMessage;
+      }
+      // Сервер не смог доставить вызов поддержке (нет сокета агента / push-токен не валиден) —
+      // показываем понятное сообщение вместо текста ошибки APNs/FCM.
+      if (/FCM|APNs|not registered|not online|not found|No push channel/i.test(errorMessage)) {
+        throw new Error('Поддержка сейчас не в сети. Позвоните по телефону или попробуйте позже.');
       }
       throw new Error(`Failed to start call: ${errorMessage}`);
     }
