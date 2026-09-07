@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, nativeTheme, shell, session, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme, shell, session, protocol, net, systemPreferences } from 'electron';
 import path from 'node:path';
 import { buildCaptchaHtml, CAPTCHA_PAGE_URL, CAPTCHA_PARTITION } from './captcha';
 
@@ -119,8 +119,26 @@ nativeTheme.on('updated', () => {
 
 protocol.registerSchemesAsPrivileged([]);
 
+// Микрофон для звонков в поддержку (WebRTC): разрешаем только media-audio, остальные запросы — запрет.
+function registerPermissionHandlers(): void {
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback, details) => {
+    if (permission === 'media') {
+      const types = (details as { mediaTypes?: string[] }).mediaTypes;
+      callback(!types || types.every(t => t === 'audio'));
+      return;
+    }
+    callback(permission === 'notifications');
+  });
+  if (isMac) {
+    // Системный запрос доступа к микрофону (NSMicrophoneUsageDescription в Info.plist) — без него
+    // getUserMedia в собранном приложении молча падает.
+    systemPreferences.askForMediaAccess('microphone').catch(() => undefined);
+  }
+}
+
 app.whenReady().then(() => {
   registerCaptchaProtocol();
+  registerPermissionHandlers();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

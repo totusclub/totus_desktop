@@ -1,8 +1,10 @@
-// Порт modules/voip/VoipService.ts (только исходящий звонок в поддержку) на браузерный WebRTC:
+// Порт modules/voip/VoipService.ts (исходящий звонок в поддержку + входящий от поддержки) на браузерный WebRTC:
 // та же сигнализация calling_api_v2 (voip.totus.club): Socket.IO (`registerDevice`, `offer`/`answer`/
 // `ice-candidate`, `call-state`) + HTTP (`/api/calls`, `/api/calls/:id`, `/api/calls/:id/candidate`,
 // `/api/calls/:id/candidates`, `/api/calls/:id/end`, `/api/ice-servers`, `/api/register-device`).
 // Без CallKeep / InCallManager / push-токенов: deviceId — стабильный UUID в localStorage.
+// Входящий звонок приходит по сокету (`offer` + `call-state: ringing`), как web-клиенту calling_v2;
+// рингтон — WebAudio (без звукового файла).
 import { io, type Socket } from 'socket.io-client';
 import { VOIP_BASE_URL } from '@shared/config/server';
 import { voipFetch, voipSocketAuth } from '@shared/modules/api/voipAuth';
@@ -10,7 +12,8 @@ import { voipFetch, voipSocketAuth } from '@shared/modules/api/voipAuth';
 const BASE_URL = VOIP_BASE_URL;
 const DEVICE_ID_KEY = '@voip_desktop_device_id';
 
-export type CallState = 'idle' | 'calling' | 'answered' | 'ended' | 'rejected';
+export type CallState = 'idle' | 'calling' | 'ringing' | 'answered' | 'ended' | 'rejected';
+export type CallDirection = 'incoming' | 'outgoing' | null;
 export type ConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'failed' | null;
 export type SpeakerMode = 'earpiece' | 'loudspeaker';
 
@@ -20,6 +23,8 @@ export type VoipSnapshot = {
   isMuted: boolean;
   speakerMode: SpeakerMode;
   callUUID: string | null;
+  /** Направление текущего звонка (входящий от поддержки / исходящий в поддержку). */
+  direction: CallDirection;
   connectionState: ConnectionState;
   /** Момент ответа (для таймера), как activeCallStartedAt в приложении. */
   startedAt: number | null;
@@ -58,6 +63,12 @@ let isMuted = false;
 let currentSpeakerMode: SpeakerMode = 'loudspeaker';
 let lastError: string | null = null;
 let answerProcessedForCall: string | null = null;
+let currentDirection: CallDirection = null;
+/** Кэш входящего offer до ответа пользователя (как incomingOfferByCallId в приложении). */
+let incomingOffer: { callId: string; offer: RTCSessionDescriptionInit; fromDeviceId: string | null } | null = null;
+let ringTimer: ReturnType<typeof setTimeout> | null = null;
+let ringtoneCtx: AudioContext | null = null;
+let ringtoneTimer: ReturnType<typeof setInterval> | null = null;
 let idleResetTimer: ReturnType<typeof setTimeout> | null = null;
 let answerWaitTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -70,6 +81,8 @@ let cachedIceExpiresAt = 0;
 
 /** Сколько ждать ответа поддержки: 20 с socket + 20 с HTTP-поллинг, как waitForAnswer → waitForAnswerHTTP. */
 const ANSWER_TIMEOUT_MS = 40000;
+/** Сколько звонит входящий, если пользователь не отвечает (в приложении — до сброса звонящим). */
+const RING_TIMEOUT_MS = 60000;
 
 // ---------------------------------------------------------------------------
 // Подписка / снимок состояния
@@ -81,6 +94,7 @@ export function getCallState(): VoipSnapshot {
     isMuted,
     speakerMode: currentSpeakerMode,
     callUUID: activeCallUUID,
+    direction: currentDirection,
     connectionState,
     startedAt: activeCallStartedAt,
     wasAnswered,
@@ -264,6 +278,7 @@ function ensureSocketConnected(): void {
     if (!callId || callId !== activeCallUUID) return;
 
     if (payload.state === 'rejected') {
+      stopRingtone();
       currentCallState = 'rejected';
       activeCallUUID = null;
       activeCallStartedAt = null;
@@ -281,6 +296,8 @@ function ensureSocketConnected(): void {
       emit();
     }
     if (payload.state === 'ended') {
+      stopRingtone();
+      incomingOffer = null;
       currentCallState = 'ended';
       connectionState = 'disconnected';
       activeCallUUID = null;
@@ -292,10 +309,65 @@ function ensureSocketConnected(): void {
     }
   });
 
-  // Входящие звонки (`offer`) десктоп не принимает — только звонок в поддержку.
-  socket.on('offer', ({ callId }: { callId?: string }) => {
-    console.log('[voip] incoming offer ignored on desktop', callId);
-  });
+  // Входящий звонок от поддержки (как socket.on('offer') в VoipService): кэшируем offer и
+  // переходим в ringing; RTCPeerConnection создаём только после ответа пользователя.
+  socket.on(
+    'offer',
+    ({
+      callId,
+      offer,
+      fromDeviceId,
+      fromLoyaltyId,
+      toLoyaltyId,
+      callerName: incomingCallerName,
+    }: {
+      callId?: string;
+      offer?: RTCSessionDescriptionInit;
+      fromDeviceId?: string | null;
+      fromLoyaltyId?: string | null;
+      toLoyaltyId?: string | null;
+      callerName?: string | null;
+    }) => {
+      if (!callId || !offer || !offer.sdp) return;
+      if (toLoyaltyId && currentLoyaltyId && toLoyaltyId !== currentLoyaltyId) return;
+      if (!currentLoyaltyId) return;
+      if (activeCallUUID && activeCallUUID !== callId) {
+        // Уже есть звонок — отклоняем новый (сервер сообщит звонящему rejected).
+        void postReject(callId);
+        return;
+      }
+      if (activeCallUUID === callId) return;
+      if (idleResetTimer) {
+        clearTimeout(idleResetTimer);
+        idleResetTimer = null;
+      }
+      incomingOffer = { callId, offer, fromDeviceId: fromDeviceId || null };
+      activeCallUUID = callId;
+      currentDirection = 'incoming';
+      currentCallState = 'ringing';
+      connectionState = null;
+      callerName = incomingCallerName || fromLoyaltyId || 'Поддержка Totus';
+      activeCallStartedAt = null;
+      wasAnswered = false;
+      lastError = null;
+      isMuted = false;
+      startRingtone();
+      if (ringTimer) clearTimeout(ringTimer);
+      ringTimer = setTimeout(() => {
+        ringTimer = null;
+        if (activeCallUUID === callId && currentCallState === 'ringing') {
+          // Пропущенный звонок
+          stopRingtone();
+          incomingOffer = null;
+          currentCallState = 'ended';
+          activeCallUUID = null;
+          emit();
+          scheduleIdleReset(3000);
+        }
+      }, RING_TIMEOUT_MS);
+      emit();
+    },
+  );
 
   socket.on('answer', async ({ callId, answer }: { callId?: string; answer?: RTCSessionDescriptionInit }) => {
     if (!answer || !answer.sdp || !callId) return;
@@ -304,7 +376,14 @@ function ensureSocketConnected(): void {
 
   socket.on('ice-candidate', async ({ callId, candidate }: { callId?: string; candidate?: RTCIceCandidateInit | null }) => {
     if (!candidate || !callId) return;
-    if (!pc || activeCallUUID !== callId) return;
+    if (activeCallUUID !== callId) return;
+    if (!pc || !pc.remoteDescription) {
+      // Входящий: кандидаты пришли до ответа — копим до setRemoteDescription.
+      const q = iceCandidateQueue.get(callId) || [];
+      q.push(candidate);
+      iceCandidateQueue.set(callId, q);
+      return;
+    }
     if (pc.connectionState === 'closed' || pc.connectionState === 'failed') return;
     if (!pc.remoteDescription) {
       const q = iceCandidateQueue.get(callId) || [];
@@ -393,12 +472,13 @@ async function sendIceCandidate(callId: string, candidate: RTCIceCandidate | nul
       const callResp = await voipFetch(`${BASE_URL}/api/calls/${callId}`).catch(() => null);
       if (callResp && callResp.ok) {
         const callData = await callResp.json();
-        const toDeviceId = callData.toDeviceId;
+        const isCallee = currentDirection === 'incoming';
+        const toDeviceId = isCallee ? callData.fromDeviceId : callData.toDeviceId;
         if (toDeviceId) {
           socket.emit('ice-candidate', {
             callId,
             candidate: candidate.toJSON(),
-            fromDeviceId: callData.fromDeviceId || currentDeviceId,
+            fromDeviceId: currentDeviceId,
             toDeviceId,
           });
         }
@@ -411,7 +491,7 @@ async function sendIceCandidate(callId: string, candidate: RTCIceCandidate | nul
     await voipFetch(`${BASE_URL}/api/calls/${callId}/candidate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: 'caller', candidate: candidate.toJSON() }),
+      body: JSON.stringify({ from: currentDirection === 'incoming' ? 'callee' : 'caller', candidate: candidate.toJSON() }),
     });
   } catch (e) {
     console.warn('[voip] sendIceCandidate: HTTP send failed', e);
@@ -422,7 +502,7 @@ async function pollRemoteCandidates(callId: string): Promise<void> {
   const currentPc = pc;
   if (!currentPc) return;
   try {
-    const resp = await voipFetch(`${BASE_URL}/api/calls/${callId}/candidates?for=caller`);
+    const resp = await voipFetch(`${BASE_URL}/api/calls/${callId}/candidates?for=${currentDirection === 'incoming' ? 'callee' : 'caller'}`);
     if (!resp.ok) return;
     const data = await resp.json();
     const candidates: RTCIceCandidateInit[] = data.candidates || [];
@@ -455,7 +535,7 @@ function ensureRemoteAudio(): HTMLAudioElement {
   return remoteAudio;
 }
 
-async function startVoiceCall(callUUID: string): Promise<void> {
+async function createPeerWithMic(callUUID: string): Promise<RTCPeerConnection> {
   const iceServers = await fetchIceServers();
   const peer = new RTCPeerConnection({
     iceServers,
@@ -528,13 +608,107 @@ async function startVoiceCall(callUUID: string): Promise<void> {
     peer.addTrack(track, stream);
   });
 
+  answerProcessedForCall = null;
+  return peer;
+}
+
+async function startVoiceCall(callUUID: string): Promise<void> {
+  const peer = await createPeerWithMic(callUUID);
   const offer = await peer.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: false });
   await peer.setLocalDescription(offer);
-  answerProcessedForCall = null;
+}
+
+// ---------------------------------------------------------------------------
+// Рингтон входящего (WebAudio, два тона 0.4 с / пауза 2 с — без файла)
+// ---------------------------------------------------------------------------
+function ringOnce(): void {
+  try {
+    if (!ringtoneCtx) ringtoneCtx = new AudioContext();
+    const ctx = ringtoneCtx;
+    if (ctx.state === 'suspended') void ctx.resume();
+    [0, 0.5].forEach(offset => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.value = 0.0001;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const t = ctx.currentTime + offset;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      osc.start(t);
+      osc.stop(t + 0.42);
+    });
+  } catch (e) {
+    console.warn('[voip] ringtone failed', e);
+  }
+}
+
+function startRingtone(): void {
+  stopRingtone();
+  ringOnce();
+  ringtoneTimer = setInterval(ringOnce, 3000);
+}
+
+function stopRingtone(): void {
+  if (ringtoneTimer) {
+    clearInterval(ringtoneTimer);
+    ringtoneTimer = null;
+  }
+  if (ringTimer) {
+    clearTimeout(ringTimer);
+    ringTimer = null;
+  }
+}
+
+async function postReject(callId: string): Promise<void> {
+  try {
+    await voipFetch(`${BASE_URL}/api/calls/${callId}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: getCurrentDeviceId() }),
+    });
+  } catch (e) {
+    console.warn('[voip] failed to notify backend about reject', e);
+  }
+}
+
+/** Аналог sendAnswerToBackend: socket `answer` звонящему + HTTP POST /api/calls/:id/answer (с ретраями). */
+async function sendAnswerToBackend(callId: string, toDeviceId: string | null): Promise<void> {
+  const localDesc = pc?.localDescription;
+  if (!localDesc) throw new Error('No local description - cannot send answer');
+  const answer = { type: localDesc.type, sdp: localDesc.sdp };
+  ensureSocketConnected();
+  if (socket && socket.connected && toDeviceId) {
+    try {
+      socket.emit('answer', { callId, answer, fromDeviceId: currentDeviceId, toDeviceId });
+    } catch (e) {
+      console.warn('[voip] answer socket emit failed', e);
+    }
+  }
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    try {
+      const resp = await voipFetch(`${BASE_URL}/api/calls/${callId}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answer, deviceId: currentDeviceId }),
+      });
+      if (!resp.ok) throw new Error(`Backend rejected answer: ${resp.status}`);
+      return;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 8) await new Promise(r => setTimeout(r, 500));
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('Failed to send answer');
 }
 
 function endVoiceCall(): void {
   clearAnswerWait();
+  stopRingtone();
   if (localStream) {
     localStream.getTracks().forEach(t => {
       try {
@@ -584,6 +758,7 @@ function scheduleIdleReset(ms: number): void {
       currentCallState = 'idle';
       connectionState = null;
       callerName = null;
+      currentDirection = null;
       emit();
     }
   }, ms);
@@ -630,6 +805,7 @@ export async function startOutgoingVoiceCallByLoyaltyId(targetLoyaltyId: string,
   const deviceId = getCurrentDeviceId();
   const callUUID = generateUUID();
   activeCallUUID = callUUID;
+  currentDirection = 'outgoing';
   currentCallState = 'calling';
   callerName = displayName;
   connectionState = 'connecting';
@@ -718,7 +894,12 @@ export function toggleSpeakerMode(): SpeakerMode {
 
 /** Аналог endCall(): сброс звонка пользователем + уведомление бэкенда. */
 export function endCall(): void {
+  if (currentCallState === 'ringing') {
+    rejectIncomingCall();
+    return;
+  }
   const callId = activeCallUUID;
+  incomingOffer = null;
   currentCallState = callId ? 'ended' : 'idle';
   activeCallUUID = null;
   activeCallStartedAt = null;
@@ -745,14 +926,71 @@ export function resetToIdle(): void {
     currentCallState = 'idle';
     connectionState = null;
     callerName = null;
+    currentDirection = null;
     emit();
   }
+}
+
+/** Принять входящий звонок (аналог answerCall в приложении / webrtc-service.answerCall на web). */
+export async function answerIncomingCall(): Promise<void> {
+  const incoming = incomingOffer;
+  if (!incoming || currentCallState !== 'ringing' || activeCallUUID !== incoming.callId) return;
+  const { callId, offer, fromDeviceId } = incoming;
+  stopRingtone();
+  connectionState = 'connecting';
+  emit();
+  try {
+    const peer = await createPeerWithMic(callId);
+    await peer.setRemoteDescription(new RTCSessionDescription(offer));
+    await processQueuedIceCandidates(callId);
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    answerProcessedForCall = callId;
+    currentCallState = 'answered';
+    wasAnswered = true;
+    activeCallStartedAt = Date.now();
+    incomingOffer = null;
+    emit();
+    await sendAnswerToBackend(callId, fromDeviceId);
+    // Кандидаты звонящего, отправленные до нашего сокета — фолбэк через HTTP.
+    void pollRemoteCandidates(callId);
+  } catch (err: any) {
+    console.error('[voip] failed to answer incoming call', err);
+    lastError = err?.message || 'Не удалось принять звонок';
+    void postReject(callId);
+    incomingOffer = null;
+    currentCallState = 'ended';
+    connectionState = null;
+    activeCallUUID = null;
+    activeCallStartedAt = null;
+    endVoiceCall();
+    emit();
+    scheduleIdleReset(3000);
+  }
+}
+
+/** Отклонить входящий звонок (POST /api/calls/:id/reject — звонящий получит call-state: rejected). */
+export function rejectIncomingCall(): void {
+  const callId = activeCallUUID;
+  stopRingtone();
+  incomingOffer = null;
+  if (callId) void postReject(callId);
+  currentCallState = 'rejected';
+  activeCallUUID = null;
+  activeCallStartedAt = null;
+  connectionState = null;
+  endVoiceCall();
+  emit();
+  scheduleIdleReset(3000);
 }
 
 /** Аналог cleanupVoipOnLogout: снять регистрацию устройства, отключить сокет, сбросить звонок. */
 export async function cleanupVoipOnLogout(): Promise<void> {
   const loyaltyIdToUnregister = currentLoyaltyId;
   if (activeCallUUID) endCall();
+  stopRingtone();
+  incomingOffer = null;
+  currentDirection = null;
   if (loyaltyIdToUnregister) await unregisterDeviceWithBackend(loyaltyIdToUnregister);
   currentLoyaltyId = null;
   if (socket) {

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Icon } from '../icons';
 import { Modal } from '../components/Modal';
 import {
+  answerIncomingCall,
   endCall,
   getConnectionStatus,
+  rejectIncomingCall,
   resetToIdle,
   subscribe,
   toggleMute,
@@ -13,7 +15,7 @@ import {
 } from './VoipClient';
 import './call.css';
 
-// Порт component/UI/callModal/CallModal.tsx (только исходящий звонок в поддержку) —
+// Порт component/UI/callModal/CallModal.tsx (исходящий звонок в поддержку + входящий от поддержки) —
 // Figma «Desktop / Call (active)»: панель 640 по центру, качество соединения, аватар-инициал 156,
 // имя/подпись, статус, таймер, кнопки MUTE / SPEAKER / СБРОСИТЬ.
 
@@ -40,6 +42,8 @@ const getStateText = (state: VoipSnapshot['state']) => {
   switch (state) {
     case 'calling':
       return 'Вызов...';
+    case 'ringing':
+      return 'Входящий звонок';
     case 'answered':
       return 'Разговор';
     case 'ended':
@@ -88,6 +92,7 @@ export const CallDialog: React.FC<Props> = ({ open, onClose, subtitle = 'Слу�
   if (!open || !snap || snap.state === 'idle') return null;
 
   const isOutgoing = snap.state === 'calling';
+  const isRinging = snap.state === 'ringing';
   const isActive = snap.state === 'answered';
   const isEnded = snap.state === 'ended' || snap.state === 'rejected';
   const isNoAnswer = isEnded && !snap.wasAnswered;
@@ -145,9 +150,13 @@ export const CallDialog: React.FC<Props> = ({ open, onClose, subtitle = 'Слу�
             {displayInitial}
           </div>
           <div className="call__name">{displayName}</div>
-          <div className="call__subtitle">{subtitle}</div>
+          <div className="call__subtitle">{snap.direction === 'incoming' ? 'Входящий звонок · Totus Club' : subtitle}</div>
 
-          {!isEnded ? (
+          {isRinging ? (
+            <div className="call__status" style={{ color: 'var(--warning)' }}>
+              Входящий звонок…
+            </div>
+          ) : !isEnded ? (
             <div className="call__status" style={{ color: statusColor }}>
               {statusText}
             </div>
@@ -156,9 +165,31 @@ export const CallDialog: React.FC<Props> = ({ open, onClose, subtitle = 'Слу�
           )}
 
           {isActive ? <div className="call__timer">{formatCallTime(callSeconds)}</div> : null}
-          {isNoAnswer ? <div className="call__no-answer">Нет ответа</div> : null}
+          {isNoAnswer ? <div className="call__no-answer">{snap.direction === 'incoming' ? 'Пропущенный звонок' : 'Нет ответа'}</div> : null}
 
-          {!isEnded ? (
+          {isRinging ? (
+            <div className="call__controls">
+              <div className="call__control">
+                <button
+                  type="button"
+                  className="call__circle call__circle--accept"
+                  onClick={() => void answerIncomingCall()}
+                  aria-label="Принять">
+                  <Icon name="phone" size={24} color="#FFFFFF" />
+                </button>
+                <span className="call__label" style={{ color: 'var(--success)' }}>
+                  ПРИНЯТЬ
+                </span>
+              </div>
+              <div className="call__divider" />
+              <div className="call__control">
+                <button type="button" className="call__circle call__circle--danger" onClick={() => rejectIncomingCall()} aria-label="Отклонить">
+                  <Icon name="phone" size={24} color="#FFFFFF" />
+                </button>
+                <span className="call__label muted">ОТКЛОНИТЬ</span>
+              </div>
+            </div>
+          ) : !isEnded ? (
             <div className="call__controls">
               {isActive ? (
                 <div className="call__control">

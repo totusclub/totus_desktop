@@ -10,7 +10,6 @@ import { Icon } from '../../icons';
 import { ConfirmModal, Modal } from '../../components/Modal';
 import { useTheme } from '../../theme/ThemeContext';
 import { openExternal } from '../../lib/desktop';
-import { CallDialog } from '../../voip/CallDialog';
 import { cleanupVoipOnLogout, getCallState, setUserLoyaltyId, startOutgoingVoiceCallByLoyaltyId } from '../../voip/VoipClient';
 import './account.css';
 
@@ -90,7 +89,6 @@ export const AccountScreen: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [supportModalVisible, setSupportModalVisible] = useState(false);
-  const [callModalVisible, setCallModalVisible] = useState(false);
   const [showCallingSupport, setShowCallingSupport] = useState(true);
   const [toast, setToast] = useState<{ title: string; text: string; error?: boolean } | null>(null);
   const [supportError, setSupportError] = useState<string | null>(null);
@@ -195,13 +193,11 @@ export const AccountScreen: React.FC = () => {
     }
     setSupportError(null);
     setSupportModalVisible(false);
-    setCallModalVisible(true);
     try {
       await startOutgoingVoiceCallByLoyaltyId(SUPPORT_LOYALTY_ID, SUPPORT_DISPLAY_NAME);
     } catch (e: any) {
       console.error('Failed to call support:', e);
       const errorMessage = e?.message || 'Неизвестная ошибка';
-      setCallModalVisible(false);
       // Деградация: «Не удалось соединиться» + предложение позвонить по телефону
       setSupportError(`Не удалось соединиться: ${errorMessage}`);
       setSupportModalVisible(true);
@@ -366,8 +362,7 @@ export const AccountScreen: React.FC = () => {
         onCallApp={() => void handleCallSupportApp()}
       />
 
-      {/* Active call UI */}
-      <CallDialog open={callModalVisible} onClose={() => setCallModalVisible(false)} />
+      {/* Окно звонка — глобально в AppShell (VoipManager) */}
     </>
   );
 };

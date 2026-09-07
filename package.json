@@ -63,7 +63,10 @@
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Микрофон нужен для звонков в поддержку Totus Club."
+      }
     },
     "win": {
       "target": ["nsis"],
