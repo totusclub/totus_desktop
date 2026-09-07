@@ -1,0 +1,119 @@
+/* Home — Figma «Desktop / Home»: фото-hero r24, карточка поиска в один ряд, две сетки по 4 колонки */
+.home { display: flex; flex-direction: column; min-height: 100%; }
+.home__body { padding-top: 32px; gap: 40px; }
+.home-section { display: flex; flex-direction: column; gap: 20px; }
+.home-highlight { color: var(--brand); }
+
+/* Hero (searchBg.jpg в приложении → CSS-градиент «море / закат», без бинарных ассетов) */
+.home-hero {
+  margin: 16px var(--content-pad) 0;
+  border-radius: 24px;
+  position: relative;
+  overflow: visible;
+  min-height: 320px;
+  background:
+    radial-gradient(120% 90% at 85% 0%, rgba(255, 175, 135, 0.55) 0%, rgba(255, 175, 135, 0) 60%),
+    radial-gradient(90% 70% at 10% 100%, rgba(16, 86, 128, 0.85) 0%, rgba(16, 86, 128, 0) 65%),
+    linear-gradient(180deg, #1F5F8B 0%, #2F8AB8 45%, #F7A26B 100%);
+}
+.home-hero::before {
+  content: ''; position: absolute; inset: 0; border-radius: 24px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.32) 100%);
+  pointer-events: none;
+}
+.home-hero__inner { position: relative; padding: 56px 40px 40px; display: flex; flex-direction: column; gap: 24px; }
+.home-hero__title { font-size: 32px; line-height: 38px; font-weight: 600; color: #FFFFFF; text-align: center; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+
+/* Карточка поиска */
+.home-search { padding: 8px 20px 12px; background: var(--background-secondary); border-radius: 24px; box-shadow: var(--shadow-card); border-color: transparent; }
+.home-search__tabs { display: flex; gap: 8px; margin: 8px 0 12px; }
+.home-search__tab { flex: 1; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-tertiary); }
+.home-search__tab--active { background: var(--background); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); color: var(--text); }
+.home-search__tab-title { font-size: 15px; font-weight: 600; }
+.home-search__tab-hint { font-size: 11px; color: var(--text-tertiary); }
+.home-search__row { display: flex; align-items: center; }
+.home-search__cell { flex: 1 1 0; min-width: 0; border-right: 1px solid var(--border); padding: 0 12px; }
+.home-search__cell--wide { flex: 1.6 1 0; padding-left: 0; }
+.home-search__cell--last { border-right: 0; }
+.home-search__submit { padding-left: 12px; flex: none; }
+
+.home-field { display: flex; flex-direction: column; width: 100%; text-align: left; padding: 8px 0; border-radius: 10px; min-width: 0; }
+.home-field:hover .home-field__value, .home-field--active .home-field__value { color: var(--brand); }
+.home-field__label { font-size: 12px; font-weight: 500; line-height: 16px; color: var(--text-tertiary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-field__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 4px; }
+.home-field__value { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-field__icon { flex: none; display: grid; place-items: center; }
+
+/* Поповеры полей (порт searchSection/modals) */
+.home-pop { display: flex; flex-direction: column; gap: 12px; max-height: min(560px, calc(100vh - 260px)); }
+.home-pop__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.home-pop__title { font-size: 16px; font-weight: 700; color: var(--text); }
+.home-pop__close { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--text); }
+.home-pop__close:hover { background: var(--background-secondary); }
+.home-pop__search { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border: 1px solid var(--input-border); border-radius: 12px; background: var(--input-background); }
+.home-pop__search:focus-within, .home-pop__search--active { border-color: var(--brand); }
+.home-pop__search-input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; font-size: 16px; color: var(--input-text); user-select: text; }
+.home-pop__search-input::placeholder { color: var(--input-placeholder); }
+.home-pop__clear { width: 24px; height: 24px; display: grid; place-items: center; color: var(--text-tertiary); }
+.home-pop__list { flex: 1; min-height: 0; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+.home-pop__section { margin-bottom: 16px; }
+.home-pop__section-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; padding: 4px 0; }
+.home-pop__item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 8px; border-radius: 10px; color: var(--text); }
+.home-pop__item:hover { background: var(--background-secondary); }
+.home-pop__item--divider { border-bottom: 1px solid var(--divider); border-radius: 0; }
+.home-pop__item--divider:hover { border-radius: 10px; }
+.home-pop__item-img { width: 40px; height: 40px; border-radius: 20px; object-fit: cover; flex: none; }
+.home-pop__item-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.home-pop__item-name { font-size: 15px; font-weight: 500; }
+.home-pop__item-sub { font-size: 13px; color: var(--text-tertiary); }
+.home-pop__state { display: flex; flex-direction: column; gap: 10px; padding: 24px 8px; }
+.home-pop__state--empty { align-items: center; text-align: center; padding: 40px 8px; gap: 16px; }
+.home-pop__empty-text { font-size: 15px; color: var(--text); }
+.home-pop__footer { padding-top: 4px; }
+.home-pop__footer--line { border-top: 1px solid var(--border); padding-top: 16px; }
+
+/* Счётчики (ночи, туристы) */
+.home-counter { display: flex; align-items: center; gap: 12px; }
+.home-counter__btn { width: 36px; height: 36px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface-secondary); display: grid; place-items: center; color: var(--text); }
+.home-counter__btn:hover { border-color: var(--brand); }
+.home-counter__btn:disabled { color: var(--text-disabled); border-color: var(--border); cursor: default; }
+.home-counter__value { min-width: 28px; text-align: center; font-size: 16px; font-weight: 600; color: var(--text); }
+.home-stepper { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 8px 0; }
+.home-stepper__value { display: flex; flex-direction: column; align-items: center; min-width: 72px; }
+.home-stepper__num { font-size: 28px; font-weight: 600; line-height: 32px; color: var(--text); }
+.home-stepper__hint { font-size: 12px; color: var(--text-tertiary); }
+.home-nights-range { width: 100%; accent-color: var(--brand); margin: 4px 0 8px; }
+.home-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; text-align: left; padding: 8px 0; }
+.home-toggle-row__text { display: flex; flex-direction: column; gap: 2px; }
+.home-toggle-row__title { font-size: 15px; font-weight: 500; color: var(--text); }
+.home-toggle-row__sub { font-size: 13px; color: var(--text-tertiary); }
+.home-tourists { display: flex; flex-direction: column; gap: 4px; }
+.home-tourists__row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; }
+.home-tourists__title { font-size: 16px; font-weight: 500; color: var(--text); }
+.home-tourists__sub { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+.home-tourists__ages-title { font-size: 15px; font-weight: 600; color: var(--text); padding: 8px 0; }
+.home-tourists__age-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.home-tourists__age-row:last-child { border-bottom: 0; }
+.home-tourists__age-label { font-size: 15px; color: var(--text); }
+.home-passcode__input { text-align: center; letter-spacing: 8px; font-size: 22px; }
+
+/* Карточки: «Начните планирование…» */
+.home-rec-card { display: flex; flex-direction: column; text-align: left; width: 100%; min-width: 0; border-radius: 16px; overflow: hidden; background: var(--card-background); box-shadow: var(--shadow-card); transition: box-shadow .15s; }
+.home-rec-card:hover { box-shadow: var(--shadow-pop); }
+.home-rec-card__image { position: relative; height: 200px; background: var(--background-tertiary) center / cover no-repeat; }
+.home-rec-card__badge { position: absolute; top: 12px; left: 12px; padding: 6px 12px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 600; background: linear-gradient(90deg, #FE732E 0%, rgba(254, 115, 46, 0.6) 65.1%, rgba(254, 115, 46, 0.8) 100%); }
+.home-rec-card__footer { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+.home-rec-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.home-rec-card__title { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.home-rec-card__rating { display: inline-flex; align-items: center; gap: 4px; color: var(--brand); font-size: 14px; font-weight: 600; flex: none; }
+.home-rec-card__star { font-size: 14px; }
+.home-rec-card__sub { font-size: 13px; color: var(--text-tertiary); }
+
+/* Карточки: «Популярные направления» */
+.home-dest-card { width: 100%; min-width: 0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-card); transition: box-shadow .15s; text-align: left; }
+.home-dest-card:hover { box-shadow: var(--shadow-pop); }
+.home-dest-card__image { position: relative; height: 160px; background: var(--background-tertiary) center / cover no-repeat; display: flex; align-items: flex-end; }
+.home-dest-card__gradient { width: 100%; padding: 28px 14px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: linear-gradient(180deg, rgba(254, 115, 46, 0) 0%, rgba(254, 115, 46, 0.9) 100%); }
+.home-dest-card__name { color: #fff; font-size: 16px; font-weight: 600; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }
+
+.home-card-skeleton { display: flex; flex-direction: column; gap: 10px; }
