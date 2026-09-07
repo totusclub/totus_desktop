@@ -1,0 +1,62 @@
+/* Checkout / Pending payment — порт component/checkout/** (Figma «Desktop / Checkout», «Desktop / Pending payment»). */
+
+.checkout { display: flex; gap: 24px; align-items: flex-start; }
+.checkout__main { flex: 1; min-width: 0; }
+.checkout__side { width: 340px; flex: none; position: sticky; top: 8px; }
+
+/* Секции в 2 колонки */
+.checkout-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.checkout-section { padding: 16px; }
+.checkout-section__header { font-size: 16px; line-height: 20px; color: var(--text); padding: 4px 0 12px; }
+.checkout-section__title { font-size: 14px; line-height: 18px; color: var(--text); margin-bottom: 16px; }
+.checkout-section__title--strong { font-weight: 400; }
+.checkout-items { background: var(--background-secondary); border-radius: 16px; width: 100%; overflow: hidden; }
+.checkout-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; border-bottom: 1px solid var(--divider); width: 100%; text-align: left; color: var(--text); }
+.checkout-item:last-child { border-bottom: 0; }
+.checkout-item--btn { cursor: pointer; }
+.checkout-item--btn:hover { background: var(--background-tertiary); }
+.checkout-item__content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.checkout-item__label { font-size: 16px; font-weight: 500; line-height: 20px; color: var(--text); }
+.checkout-item__value { font-size: 14px; line-height: 18px; color: var(--text-tertiary); overflow-wrap: anywhere; }
+.checkout-item__visa { font-size: 14px; color: var(--brand); white-space: nowrap; }
+.checkout-item__arrow { color: var(--text); }
+
+/* Баннер «Отправим документы на …» / «Указано местное время…» */
+.checkout-banner { display: flex; align-items: center; gap: 12px; padding: 8px 16px; margin-top: 24px; border-radius: 12px; border: 1px solid var(--border); border-bottom: 1px solid var(--brand); background: var(--card-background); box-shadow: var(--shadow-card); }
+.checkout-banner--compact { margin-top: 16px; }
+.checkout-banner__text { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); }
+.checkout-banner__email { color: var(--brand); font-weight: 500; }
+
+/* «Всего за тур» */
+.checkout-total { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.checkout-total__content { display: flex; flex-direction: column; gap: 4px; }
+.checkout-total__label { font-size: 12px; color: var(--text); }
+.checkout-total__price { font-size: 20px; font-weight: 500; color: var(--text); }
+
+/* Ошибка загрузки заказа */
+.checkout-error { max-width: 420px; margin: 80px auto 0; display: flex; flex-direction: column; gap: 12px; }
+.checkout-error__text { font-size: 15px; line-height: 22px; text-align: center; color: var(--text-tertiary); margin-bottom: 8px; }
+
+/* Модалка «Детали перелёта» */
+.checkout-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.checkout-modal__title { font-size: 20px; font-weight: 700; color: var(--text); }
+.checkout-modal__subtitle { font-size: 14px; color: var(--text-tertiary); margin-top: 4px; }
+.checkout-modal__close { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--text); flex: none; }
+.checkout-modal__close:hover { background: var(--background-secondary); }
+.checkout-modal__body { display: flex; flex-direction: column; gap: 16px; }
+
+/* Кнопка СБП */
+.sbp-btn { min-height: 52px; border-radius: 14px; gap: 12px; }
+.sbp-btn__label { flex: 1; text-align: left; font-size: 16px; font-weight: 600; color: #fff; }
+.sbp-btn__badge { display: inline-flex; align-items: center; gap: 6px; background: #fff; border-radius: 10px; padding: 4px 10px 4px 6px; }
+.sbp-btn__badge-text { font-size: 13px; font-weight: 700; letter-spacing: .5px; color: #5B57A2; }
+.sbp-btn__spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: checkout-spin .8s linear infinite; flex: none; }
+@keyframes checkout-spin { to { transform: rotate(360deg); } }
+
+/* Pending payment — карточка 480 по центру */
+.pending { min-height: calc(100vh - var(--title-bar-h)); display: flex; align-items: center; justify-content: center; padding: 40px var(--content-pad); }
+.pending__card { width: 480px; max-width: 100%; padding: 32px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.pending__spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--brand); animation: checkout-spin .8s linear infinite; }
+.pending__title { font-size: 24px; font-weight: 700; color: var(--text); margin-top: 8px; }
+.pending__subtitle { font-size: 15px; line-height: 22px; color: var(--text-tertiary); margin-bottom: 8px; }
+.pending__timer { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; font-variant-numeric: tabular-nums; }

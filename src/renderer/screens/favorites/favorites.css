@@ -1,0 +1,33 @@
+/* Favorites — порт screens/favorites/FavoritesScreen.tsx (Figma «Desktop / Favorites»): сетка 3 колонки. */
+
+.favorites-grid { align-items: start; }
+.favorites-item { position: relative; min-width: 0; }
+/* Кнопка-сердце поверх фото (как removeButton в приложении: 40×40, скругление 20, полупрозрачная подложка) */
+.favorites-remove {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--surface);
+  opacity: 0.92;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  transition: opacity .15s, transform .15s;
+}
+.favorites-remove:hover { opacity: 1; transform: scale(1.06); }
+
+.favorites-refresh { width: 40px; height: 40px; border-radius: 10px; background: var(--background-secondary); display: grid; place-items: center; color: var(--text); }
+.favorites-refresh:hover:not(:disabled) { background: var(--background-tertiary); }
+.favorites-refresh:disabled { color: var(--text-disabled); cursor: default; }
+.favorites-refresh--spinning svg { animation: favorites-spin .9s linear infinite; }
+@keyframes favorites-spin { to { transform: rotate(360deg); } }
+
+.favorites-loading { text-align: center; font-size: 14px; color: var(--text-tertiary); }
+.favorites-empty { padding-top: 80px; max-width: 520px; margin: 0 auto; }
+.favorites-empty__text { font-size: 18px; font-weight: 600; color: var(--text-tertiary); margin-top: 12px; }
+.favorites-empty__sub { font-size: 14px; color: var(--text-tertiary); }
+.favorites-error { text-align: center; }
