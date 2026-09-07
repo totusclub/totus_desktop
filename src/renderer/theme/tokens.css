@@ -1,0 +1,75 @@
+/* Токены темы — 1:1 с totus_APP src/theme/light.ts и dark.ts. Ширины/высоты — по макету Figma «DESKTOP UI». */
+:root, [data-theme='light'] {
+  --brand: #FE732E;
+  --brand-soft: #FFF1EA;
+  --success: #39BF87;
+  --error: #FF3E3E;
+  --warning: #FFC107;
+  --background: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --background-tertiary: #E4E4E4;
+  --surface: #FFFFFF;
+  --surface-secondary: #F9F9F9;
+  --text: #1F1F1F;
+  --text-secondary: #3D3D3D;
+  --text-tertiary: #7A7A7A;
+  --text-disabled: #B8B8B8;
+  --text-inverse: #FFFFFF;
+  --border-dark: #B8B8B8;
+  --border: #E0E0E0;
+  --border-secondary: #E4E4E4;
+  --border-light: #F5F5F5;
+  --overlay: rgba(31, 31, 31, 0.58);
+  --overlay-light: rgba(0, 0, 0, 0.1);
+  --card-background: #FFFFFF;
+  --card-border: #E0E0E0;
+  --input-background: #FFFFFF;
+  --input-border: #E0E0E0;
+  --input-text: #1F1F1F;
+  --input-placeholder: #7A7A7A;
+  --divider: #E4E4E4;
+  --sbp: #1D1346;
+  --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.18);
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --brand-soft: rgba(254, 115, 46, 0.16);
+  --background: #000000;
+  --background-secondary: #1A1A1A;
+  --background-tertiary: #2A2A2A;
+  --surface: #1A1A1A;
+  --surface-secondary: #242424;
+  --text: #FFFFFF;
+  --text-secondary: #E0E0E0;
+  --text-tertiary: #B0B0B0;
+  --text-disabled: #707070;
+  --text-inverse: #1F1F1F;
+  --border-dark: #5A5A5A;
+  --border: #3A3A3A;
+  --border-secondary: #2A2A2A;
+  --border-light: #1A1A1A;
+  --overlay: rgba(0, 0, 0, 0.8);
+  --overlay-light: rgba(0, 0, 0, 0.3);
+  --card-background: #1A1A1A;
+  --card-border: #3A3A3A;
+  --input-background: #242424;
+  --input-border: #3A3A3A;
+  --input-text: #FFFFFF;
+  --input-placeholder: #B0B0B0;
+  --divider: #3A3A3A;
+  --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+/* Геометрия окна (Figma): title bar 38, сайдбар-рейл 88, контент с полями 40 */
+:root {
+  --title-bar-h: 38px;
+  --rail-w: 88px;
+  --content-pad: 40px;
+  --radius-card: 16px;
+  --radius-input: 12px;
+  --radius-pill: 999px;
+  --font: 'Golos Text', -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
