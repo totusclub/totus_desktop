@@ -4,6 +4,7 @@ import { ChatWidget } from '@tosmedia/ai-assistant';
 import type { RootState } from '@shared/modules/store';
 import { useUserAccess } from '../app/useUserAccess';
 import { useAiLinkInterceptor } from './useAiLinkInterceptor';
+import { AiProvider } from './AiRoot';
 
 // Плавающая кнопка Милы на всех экранах (как GlobalAiChat на сайте): только для авторизованных
 // с access === 0 (как гейт вкладки в приложении). Ссылки из карточек перехватываются в экран отеля.
@@ -14,8 +15,10 @@ export const AiFloatingWidget: React.FC = () => {
   useAiLinkInterceptor(ref);
   if (!accessToken || access !== 0) return null;
   return (
-    <div ref={ref}>
-      <ChatWidget />
-    </div>
+    <AiProvider shell="widget">
+      <div ref={ref}>
+        <ChatWidget />
+      </div>
+    </AiProvider>
   );
 };

@@ -6,6 +6,7 @@ import { PageHeader } from '../shell/PageHeader';
 import { Icon } from '../icons';
 import { useAppNavigation } from '../app/navigation';
 import { useAiLinkInterceptor } from './useAiLinkInterceptor';
+import { AiProvider } from './AiRoot';
 
 // Экран «Totus AI» (Figma «Desktop / Totus AI»). Логика — useAssistant() из @tosmedia/ai-assistant:
 // тот же WebSocket-протокол, история, карточки туров/номеров/направлений, что на сайте и в приложении.
@@ -29,7 +30,11 @@ export const AiScreen: React.FC = () => {
       </>
     );
   }
-  return <AiChat />;
+  return (
+    <AiProvider shell="widget">
+      <AiChat />
+    </AiProvider>
+  );
 };
 
 const AiChat: React.FC = () => {

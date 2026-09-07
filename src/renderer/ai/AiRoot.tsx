@@ -23,19 +23,34 @@ const NavigatorBridge: React.FC = () => {
   return null;
 };
 
-export const AiRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+/**
+ * Глобальная часть: только мост навигации. Сам AiAssistantProvider НЕ оборачивает приложение —
+ * его styles.css содержит сбросы (`.totus-ai-root * { border: 0 }`, `input/button { background: transparent }`),
+ * которые ломали инпуты, чекбоксы и кнопки всех экранов (особенно в Dark Mode).
+ */
+export const AiRoot: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <>
+    <NavigatorBridge />
+    {children}
+  </>
+);
+
+/** Провайдер Милы — оборачивает ТОЛЬКО AI-контент (экран Totus AI и плавающий виджет). */
+export const AiProvider: React.FC<{ children: React.ReactNode; shell?: 'page' | 'widget' }> = ({
+  children,
+  shell = 'widget',
+}) => {
   const accessToken = useSelector((s: RootState) => s.auth.accessToken);
   return (
     <AiAssistantProvider
       key={accessToken ? 'auth' : 'guest'}
-      shell="widget"
+      shell={shell}
       apiBase={AI_API_BASE}
       wsUrl={AI_WS_URL}
       tourBasePath={AI_TOUR_BASE_PATH}
       homePath="/"
       getAccessToken={getAccessToken}
       historyMode="auto">
-      <NavigatorBridge />
       {children}
     </AiAssistantProvider>
   );
