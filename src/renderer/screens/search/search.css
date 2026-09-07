@@ -1,0 +1,46 @@
+/* Search results — Figma «Desktop / List / Tours»: панель фильтров 280 слева, карточки в 2 колонки справа */
+.search { display: flex; flex-direction: column; min-height: 100%; }
+.search__body { flex-direction: row; align-items: flex-start; gap: 24px; }
+.search__aside { width: 280px; flex: none; position: sticky; top: 8px; }
+.search__filters-card { padding: 20px; max-height: calc(100vh - var(--title-bar-h) - 120px); overflow-y: auto; }
+.search__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+
+/* Панель фильтров (FiltersModalContent, variant sidebar) */
+.search-filters { display: flex; flex-direction: column; gap: 20px; }
+.search-filters--skeleton { gap: 14px; }
+.search-filters__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.search-filters__title { font-size: 20px; font-weight: 600; color: var(--text); }
+.search-filters__reset { font-size: 14px; }
+.search-filters__section { display: flex; flex-direction: column; gap: 10px; }
+.search-filters__section-title { font-size: 16px; font-weight: 500; color: var(--text); }
+.search-filters__rows { display: flex; flex-direction: column; gap: 2px; }
+.search-filters__row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 6px 4px; border-radius: 8px; color: var(--text); }
+.search-filters__row:hover { background: var(--background-secondary); }
+.search-filters__row--disabled { opacity: .5; cursor: default; }
+.search-filters__row--disabled:hover { background: none; }
+.search-filters__row-label { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-filters__row-count { font-size: 13px; color: var(--text-tertiary); flex: none; }
+.search-filters__toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; text-align: left; padding: 4px 0; }
+.search-filters__toggle-label { font-size: 15px; font-weight: 500; color: var(--text); }
+
+/* Чипы выбранных фильтров */
+.search-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.search-chips__chip { gap: 6px; }
+.search-chips__chip:disabled { opacity: .6; cursor: default; }
+.search-chips__label { white-space: nowrap; }
+
+/* Список */
+.search-list { display: flex; flex-direction: column; gap: 16px; }
+.search-list__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.search-list__count { font-size: 14px; color: var(--text-tertiary); }
+.search-list__sentinel { height: 1px; }
+.search-sort__btn { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 500; color: var(--brand); padding: 6px 0; }
+.search-sort__menu { display: flex; flex-direction: column; margin: -8px; }
+.search-sort__option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border-radius: 10px; color: var(--text); text-align: left; font-size: 15px; }
+.search-sort__option:hover { background: var(--background-secondary); }
+.search-sort__option--active { font-weight: 500; }
+.search-sort__option-left { display: inline-flex; align-items: center; gap: 12px; }
+
+/* Пустое состояние */
+.search-empty { padding: 80px 20px; }
+.search-empty__message { max-width: 520px; font-size: 15px; line-height: 22px; color: var(--text-tertiary); }
