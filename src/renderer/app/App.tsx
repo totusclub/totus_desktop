@@ -20,6 +20,7 @@ import { OrdersScreen } from '../screens/orders/OrdersScreen';
 import { OrderDetailsScreen } from '../screens/orders/OrderDetailsScreen';
 import { FavoritesScreen } from '../screens/favorites/FavoritesScreen';
 import { AccountScreen } from '../screens/account/AccountScreen';
+import { SupportChatScreen } from '../screens/support/SupportChatScreen';
 import { PrivacyPolicyScreen } from '../screens/account/PrivacyPolicyScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { SignupScreen } from '../screens/auth/SignupScreen';
@@ -50,6 +51,7 @@ export const App: React.FC = () => (
                 <Route path="/orders/details" element={<OrderDetailsScreen />} />
                 <Route path="/favorites" element={<FavoritesScreen />} />
                 <Route path="/account" element={<AccountScreen />} />
+                <Route path="/support-chat" element={<SupportChatScreen />} />
                 <Route path="/privacy" element={<PrivacyPolicyScreen />} />
                 <Route path="/login" element={<LoginScreen />} />
                 <Route path="/signup" element={<SignupScreen />} />

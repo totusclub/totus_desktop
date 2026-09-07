@@ -33,6 +33,8 @@ img { display: block; max-width: 100%; }
 .rail__item:hover { background: var(--background-secondary); }
 .rail__item--active { background: var(--brand-soft); color: var(--brand); font-weight: 500; }
 .rail__item--active:hover { background: var(--brand-soft); }
+.rail__icon { position: relative; display: inline-flex; line-height: 0; }
+.rail__badge { position: absolute; top: -6px; right: -10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 11px; line-height: 18px; font-weight: 600; text-align: center; border: 2px solid var(--background); box-sizing: content-box; }
 .rail__spacer { flex: 1; }
 .rail__avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 600; font-size: 15px; }
 .content { overflow-y: auto; overflow-x: hidden; position: relative; min-width: 0; }
