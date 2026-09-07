@@ -174,7 +174,7 @@ export const formatOfferDate = (dateStr: string): string => {
  * Format price with non-breaking spaces for thousands separator
  */
 export const formatOfferPrice = (price: number): string => {
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\\u202F');
 };
 
 /** Prefer analytics_price (kedam-WEB getOfferPriceValue). */
