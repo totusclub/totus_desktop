@@ -1,0 +1,21 @@
+/* RangeSlider — два бегунка на одном треке (порт UI/rangeSlider) */
+.range-slider { display: flex; flex-direction: column; gap: 12px; }
+.range-slider__title { font-size: 16px; font-weight: 500; color: var(--text); }
+.range-slider__inputs { display: flex; align-items: center; gap: 8px; }
+.range-slider__input { flex: 1; min-width: 0; padding: 10px 12px; font-size: 14px; border-radius: 8px; }
+.range-slider__sep { color: var(--text-tertiary); padding: 0 2px; }
+.range-slider__track-wrap { position: relative; height: 28px; margin: 4px 0 0; }
+.range-slider__track { position: absolute; left: 0; right: 0; top: 12px; height: 4px; border-radius: 3px; background: var(--border-secondary); }
+.range-slider__selected { position: absolute; top: 12px; height: 4px; border-radius: 3px; background: var(--brand); }
+.range-slider__thumb {
+  position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 28px; margin: 0;
+  -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none;
+}
+.range-slider__thumb::-webkit-slider-runnable-track { background: transparent; height: 28px; }
+.range-slider__thumb::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; pointer-events: auto; cursor: pointer;
+  width: 24px; height: 24px; border-radius: 50%; margin-top: 2px;
+  background: var(--background); border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.range-slider__thumb:focus-visible::-webkit-slider-thumb, .range-slider__thumb:active::-webkit-slider-thumb { border-color: var(--brand); }

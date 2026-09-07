@@ -1,0 +1,87 @@
+/* HotelCard — порт UI/hotelCard (карточка отеля / номера). Только токены темы. */
+.hotel-card {
+  background: var(--card-background);
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  outline: none;
+}
+.hotel-card--clickable { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.hotel-card--clickable:hover { box-shadow: var(--shadow-pop); }
+.hotel-card--clickable:focus-visible { box-shadow: 0 0 0 2px var(--brand); }
+.hotel-card--room { padding: 0; overflow: hidden; }
+
+.hotel-card__image-section { position: relative; width: 100%; }
+.hotel-card__image-wrap { position: relative; border-radius: 8px; overflow: hidden; width: 100%; }
+.hotel-card--room .hotel-card__image-wrap { border-radius: 0; }
+.hotel-card__image { width: 100%; object-fit: cover; display: block; background: var(--background-secondary); }
+.hotel-card__logo-placeholder { display: grid; place-items: center; background: var(--background-tertiary); color: var(--text); width: 100%; }
+
+.hotel-card__nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); color: var(--text);
+  display: grid; place-items: center;
+  box-shadow: var(--shadow-pop);
+  opacity: 0; transition: opacity .15s;
+}
+.hotel-card__nav--prev { left: 12px; }
+.hotel-card__nav--next { right: 12px; }
+.hotel-card__image-wrap:hover .hotel-card__nav { opacity: 1; }
+.hotel-card__nav:hover { background: var(--background-secondary); }
+
+.hotel-card__dots { display: flex; justify-content: center; align-items: center; gap: 6px; margin: 12px 16px 4px; flex-wrap: wrap; }
+.hotel-card__dot { display: inline-block; border-radius: 50%; background: var(--border); }
+.hotel-card__dot--active { background: var(--brand); }
+
+.hotel-card__content { display: flex; flex-direction: column; gap: 12px; padding: 8px 16px 16px; }
+.hotel-card--room .hotel-card__content { padding-top: 12px; }
+.hotel-card__stars { display: flex; gap: 4px; }
+.hotel-card__name { font-size: 16px; line-height: 20px; font-weight: 500; color: var(--text); }
+.hotel-card__room-header { padding: 12px 16px 0; }
+.hotel-card__review-row { display: flex; align-items: center; gap: 8px; }
+.hotel-card__rating { display: inline-block; padding: 4px 8px; border-radius: 8px; color: #fff; font-size: 12px; font-weight: 500; line-height: 16px; }
+.hotel-card__rating--good { background: #288556; }
+.hotel-card__rating--mid { background: var(--warning); color: #1F1F1F; }
+.hotel-card__reviews { display: inline-flex; align-items: center; gap: 4px; color: var(--text); }
+.hotel-card__reviews--btn:hover { color: var(--brand); }
+.hotel-card__review-text { font-size: 14px; }
+.hotel-card__address { font-size: 12px; line-height: 20px; color: var(--text-tertiary); }
+.hotel-card__tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.hotel-card__tag { display: inline-block; padding: 6px 12px; border-radius: 16px; background: var(--background-tertiary); color: var(--text); font-size: 12px; font-weight: 500; }
+.hotel-card__price-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+.hotel-card__price { font-size: 20px; line-height: 24px; font-weight: 500; color: var(--brand); }
+.hotel-card__date { font-size: 14px; line-height: 18px; color: var(--text-tertiary); }
+.hotel-card__room-price { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.hotel-card__ai-price { font-size: 13px; font-weight: 600; line-height: 18px; }
+
+.hotel-card__more-details { align-self: flex-start; padding: 12px 16px 0; font-size: 14px; font-weight: 500; color: var(--brand); text-decoration: underline; }
+.hotel-card__features { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; margin-top: 4px; }
+.hotel-card__feature { display: flex; align-items: center; gap: 8px; color: var(--text); }
+.hotel-card__feature-text { font-size: 12px; flex: 1; }
+
+/* Бейдж «AI Подбор» (UI/aiPickBadge) */
+.ai-pick-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px 5px 6px; border-radius: 999px;
+  background: linear-gradient(90deg, #FF9A56 0%, #FE732E 55%, #F2552C 100%);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow: 0 4px 10px rgba(254, 115, 46, 0.35);
+  color: #fff; font-size: 12px; font-weight: 600; line-height: 16px;
+}
+.ai-pick-badge--overlay { position: absolute; top: 12px; left: 12px; z-index: 3; }
+.ai-pick-badge--inline { align-self: flex-start; margin-bottom: 8px; }
+.ai-pick-badge__mark { display: inline-grid; place-items: center; min-width: 22px; height: 18px; padding: 0 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.22); font-size: 11px; font-weight: 700; letter-spacing: .4px; }
+.ai-pick-badge__label { font-weight: 600; }
+
+/* Скелетон карточки (searchResult/HotelCardSkeleton) */
+.hotel-card-skeleton { background: var(--card-background); border-radius: 24px; padding: 16px; box-shadow: var(--shadow-card); }
+.hotel-card-skeleton__content { display: flex; flex-direction: column; gap: 12px; padding: 8px 16px 16px; }
+.hotel-card-skeleton__row { display: flex; align-items: center; gap: 8px; }
+.hotel-card-skeleton__row--dots { justify-content: center; gap: 6px; margin: 12px 0 4px; }
+.hotel-card-skeleton__row--wrap { flex-wrap: wrap; }
+.hotel-card-skeleton__footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 12px; border-top: 1px solid var(--border); }
+.hotel-card-skeleton__footer-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
