@@ -1,0 +1,89 @@
+/* Account / Privacy policy — порт component/account/Account.tsx (Figma «Desktop / Account», «Support call»). */
+
+.account-layout { display: flex; gap: 24px; align-items: flex-start; }
+.account-main { flex: 1; min-width: 0; }
+.account-side { width: 380px; flex: none; }
+
+/* Карта лояльности: оранжевый градиент (LoyaltyCardBackground), белый текст — в Dark не меняется */
+.loyalty-card { position: relative; min-height: 280px; border-radius: 20px; overflow: hidden; color: #FFFFFF; }
+.loyalty-card__bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(90% 80% at 0% 100%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0) 60%),
+    linear-gradient(135deg, #FE732E 0%, #FF9A5C 55%, #FFAF87 100%);
+}
+.loyalty-card__bg::after {
+  content: ''; position: absolute; right: -80px; top: -120px; width: 320px; height: 320px; border-radius: 50%;
+  border: 40px solid rgba(255, 255, 255, 0.08);
+}
+.loyalty-card__content { position: relative; z-index: 1; min-height: 280px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; }
+.loyalty-card__header { display: flex; justify-content: space-between; align-items: center; }
+.loyalty-card__title { font-size: 25px; font-weight: 700; }
+.loyalty-card__info { display: flex; flex-direction: column; gap: 8px; }
+.loyalty-card__number-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0; color: #FFFFFF; margin-bottom: 8px; align-self: flex-start; border-radius: 8px; }
+.loyalty-card__number-btn:hover { opacity: .85; }
+.loyalty-card__number { font-size: 18px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; user-select: text; }
+.loyalty-card__copy { margin-left: 8px; display: inline-flex; }
+.loyalty-card__info-row { display: flex; align-items: center; gap: 4px; }
+.loyalty-card__info-text { font-size: 14px; line-height: 20px; }
+.loyalty-card__footer { border-top: 1px solid rgba(249, 249, 249, 0.22); padding-top: 16px; display: flex; justify-content: space-between; align-items: center; }
+.loyalty-card__name { font-size: 22px; font-weight: 500; }
+.loyalty-card__user { width: 39px; height: 39px; border-radius: 20px; border: 1px solid #F9F9F9; display: grid; place-items: center; }
+
+/* Группы настроек — компактные карточки */
+.account-settings { display: flex; flex-direction: column; gap: 10px; }
+.account-settings__card { border-radius: 14px; overflow: hidden; border-color: var(--border-light); }
+.account-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; min-height: 48px; width: 100%; text-align: left; color: var(--text); }
+.account-row:not(.account-row--static):hover { background: var(--background-secondary); }
+.account-row--static { cursor: default; }
+.account-row__icon { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none; }
+.account-row__icon--green { background: rgba(52, 199, 89, 0.12); }
+.account-row__icon--orange { background: rgba(255, 149, 0, 0.12); }
+.account-row__icon--violet { background: rgba(88, 86, 214, 0.1); }
+.account-row__icon--brand { background: rgba(254, 115, 46, 0.12); }
+[data-theme='dark'] .account-row__icon--green { background: rgba(52, 199, 89, 0.18); }
+[data-theme='dark'] .account-row__icon--orange { background: rgba(255, 149, 0, 0.18); }
+[data-theme='dark'] .account-row__icon--violet { background: rgba(88, 86, 214, 0.18); }
+[data-theme='dark'] .account-row__icon--brand { background: rgba(254, 115, 46, 0.2); }
+.account-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.account-row__title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
+.account-row__title--solo { flex: 1; }
+.account-row__subtitle { font-size: 12px; letter-spacing: -0.1px; color: var(--text-tertiary); }
+.account-row__hairline { height: 1px; background: var(--border); margin-left: 52px; }
+/* Switch: в Dark трек фиолетовый, в Light — зелёный (как trackColor в приложении) */
+.account-row .toggle.toggle--on { background: #34C759; }
+.account-row .toggle.account-toggle--dark { background: #5856D6; }
+
+/* Тост (замена Alert «Скопировано» / «Ошибка») */
+.account-toast {
+  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 18px; box-shadow: var(--shadow-pop); z-index: 120; min-width: 260px; text-align: center;
+}
+.account-toast--error { border-color: var(--error); }
+.account-toast__title { font-size: 15px; font-weight: 600; }
+.account-toast__text { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+
+/* Диалог «Звонок в поддержку» (520) */
+.account-support { display: flex; flex-direction: column; align-items: stretch; }
+.account-support__title { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 8px; }
+.account-support__message { font-size: 16px; font-weight: 500; text-align: center; color: var(--text); margin-bottom: 20px; }
+.account-support__error { text-align: center; margin: -8px 0 16px; font-size: 14px; }
+.account-support__actions { display: flex; flex-direction: column; gap: 10px; }
+.account-support__btn { height: 50px; border-radius: 15px; }
+.account-support__cancel { height: 44px; font-size: 16px; font-weight: 500; color: var(--text-tertiary); border-radius: 12px; }
+.account-support__cancel:hover { background: var(--background-secondary); }
+
+/* Политика конфиденциальности */
+.privacy { max-width: 860px; display: flex; flex-direction: column; gap: 20px; }
+.privacy__intro { font-size: 15px; font-weight: 500; color: var(--text-tertiary); line-height: 22px; }
+.privacy__section { display: flex; flex-direction: column; gap: 10px; }
+.privacy__section-title { font-size: 17px; font-weight: 600; color: var(--text); line-height: 24px; }
+.privacy__subsection { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.privacy__subsection-title { font-size: 15px; font-weight: 600; color: var(--text); line-height: 22px; }
+.privacy__paragraph { font-size: 15px; color: var(--text-secondary); line-height: 22px; }
+.privacy__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.privacy__list-item { display: flex; align-items: flex-start; gap: 8px; }
+.privacy__bullet { font-size: 15px; line-height: 22px; color: var(--text-secondary); flex: none; }
+.privacy__list-text { flex: 1; font-size: 15px; color: var(--text-secondary); line-height: 22px; }
