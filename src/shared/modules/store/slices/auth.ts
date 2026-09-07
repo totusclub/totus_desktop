@@ -5,10 +5,22 @@ import {
   verifyCode,
   signupUser,
   verificationSignup,
-} from '../actions/auth.ts';
+} from '../actions/auth';
 import {jwtDecode} from 'jwt-decode';
 
-const initialState = {
+// Desktop: явные типы состояния (в RN tsc не запускается, initialState был untyped).
+export type AuthState = {
+  userId: string | number | null;
+  user: any;
+  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  loading: boolean;
+  error: any;
+  fullAuth: boolean;
+};
+
+const initialState: AuthState = {
   userId: null,
   user: null,
   token: null,
@@ -121,9 +133,9 @@ const authSlice = createSlice({
         }
 
         try {
-          const decoded = jwtDecode(accessToken);
+          const decoded = jwtDecode<{ id?: string | number }>(accessToken);
         state.loading = false;
-        state.userId = decoded.id;
+        state.userId = decoded.id ?? null;
         state.fullAuth = false;
           state.accessToken = accessToken;
           state.refreshToken = (action.payload as any)?.refreshToken;
