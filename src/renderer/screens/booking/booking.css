@@ -1,0 +1,91 @@
+/* Booking — порт component/booking/** (Figma «Desktop / Booking»). Только токены темы. */
+
+.booking { display: flex; gap: 24px; align-items: flex-start; }
+.booking__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.booking__side { width: 340px; flex: none; position: sticky; top: 8px; }
+
+.booking-card { padding: 20px; }
+.booking-card__head { margin-bottom: 20px; display: flex; flex-direction: column; gap: 4px; }
+.booking-card__title { font-size: 20px; font-weight: 600; line-height: 26px; color: var(--text); }
+.booking-card__subtitle { font-size: 14px; line-height: 18px; color: var(--text-tertiary); }
+
+.booking-form { display: flex; flex-direction: column; gap: 16px; }
+.booking-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.booking-field { display: flex; flex-direction: column; min-width: 0; }
+.booking-field--inline { justify-content: flex-end; min-height: 46px; }
+.booking-field__error { margin-top: 6px; line-height: 16px; }
+.booking-field .input { height: 46px; }
+.booking-field .input:disabled { color: var(--text-disabled); background: var(--background-secondary); }
+
+.booking-tourist { margin-top: 4px; }
+.booking-tourist__divider { margin: 20px 0; }
+
+/* «Нет отчества» */
+.booking-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; height: 46px; padding: 0 2px; color: var(--text); }
+.booking-toggle-row__label { font-size: 16px; line-height: 20px; }
+
+/* Пол */
+.booking-gender { display: flex; align-items: center; gap: 16px; height: 46px; }
+.booking-gender__label { font-size: 16px; color: var(--text); }
+.booking-radio-group { display: flex; gap: 24px; }
+.booking-radio { display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+.booking-radio__circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-disabled); display: grid; place-items: center; flex: none; }
+.booking-radio__circle--on { border-color: var(--brand); }
+.booking-radio__inner { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+.booking-radio__label { font-size: 16px; }
+
+/* Гражданство / Документ */
+.booking-dropdown { width: 100%; height: 52px; border: 1px solid var(--input-border); border-radius: var(--radius-input); background: var(--input-background); padding: 0 14px; display: flex; flex-direction: column; justify-content: center; align-items: stretch; text-align: left; color: var(--text); }
+.booking-dropdown:hover:not(:disabled) { border-color: var(--border-dark); }
+.booking-dropdown--locked, .booking-dropdown:disabled { cursor: default; }
+.booking-dropdown__label { font-size: 12px; line-height: 14px; color: var(--input-placeholder); margin-bottom: 4px; }
+.booking-dropdown__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.booking-dropdown__value { font-size: 15px; line-height: 18px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Дата (маска + поповер «день / месяц / год») */
+.booking-date { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border: 1px solid var(--input-border); border-radius: var(--radius-input); background: var(--input-background); }
+.booking-date:focus-within { border-color: var(--brand); }
+.booking-date--error { border-color: var(--error); }
+.booking-date--disabled { opacity: .6; }
+.booking-date__input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 15px; color: var(--input-text); letter-spacing: -.2px; user-select: text; }
+.booking-date__input::placeholder { color: var(--input-placeholder); }
+.booking-date__btn { width: 28px; height: 28px; display: grid; place-items: center; flex: none; border-radius: 8px; }
+.booking-date__btn:hover:not(:disabled) { background: var(--background-secondary); }
+.booking-picker { display: flex; flex-direction: column; gap: 12px; }
+.booking-picker__title { font-size: 16px; font-weight: 600; color: var(--text); }
+.booking-picker__selected { font-size: 14px; color: var(--text-tertiary); }
+.booking-picker__row { display: grid; grid-template-columns: 72px 1fr 88px; gap: 8px; }
+.booking-picker__select { padding: 10px 8px; }
+
+/* Модалки «Гражданство» / «Документ» */
+.booking-modal__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); margin-bottom: 8px; }
+.booking-modal__title { font-size: 18px; font-weight: 600; color: var(--text); }
+.booking-modal__close { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--text); }
+.booking-modal__close:hover { background: var(--background-secondary); }
+.booking-modal__list { display: flex; flex-direction: column; }
+.booking-modal__item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 8px; border-radius: 10px; font-size: 16px; color: var(--text); text-align: left; }
+.booking-modal__item:hover { background: var(--background-secondary); }
+
+/* Правая колонка: «Ваш заказ», юр. текст, кнопка */
+.booking-side-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.booking-order { display: flex; flex-direction: column; gap: 6px; }
+.booking-order__title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.booking-order__row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.booking-order__label { flex: 1; font-size: 14px; line-height: 18px; color: var(--text); }
+.booking-order__value { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); white-space: nowrap; }
+.booking-order__date { font-size: 13px; line-height: 16px; color: var(--text-tertiary); }
+.booking-order__divider { margin: 4px 0; background: var(--border-light); }
+.booking-order__total-label { font-size: 16px; font-weight: 600; color: var(--text); }
+.booking-order__total-value { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.booking-legal { font-size: 12px; line-height: 16px; color: var(--text-tertiary); text-align: center; }
+.booking-legal__link { color: var(--brand); text-decoration: underline; }
+.booking-footer { padding-top: 4px; }
+.booking-general-error { font-size: 14px; line-height: 18px; padding: 0 4px; }
+.booking-spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; animation: booking-spin .8s linear infinite; flex: none; }
+@keyframes booking-spin { to { transform: rotate(360deg); } }
+
+/* Скелетон */
+.booking-skeleton__head { gap: 6px; }
+.booking-skeleton__toggle { display: flex; align-items: center; justify-content: space-between; height: 46px; }
+.booking-skeleton__gender { display: flex; align-items: center; gap: 12px; height: 46px; }
+.booking-skeleton__legal { display: flex; flex-direction: column; align-items: center; gap: 4px; }
