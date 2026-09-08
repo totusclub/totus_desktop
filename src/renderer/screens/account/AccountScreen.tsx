@@ -13,6 +13,7 @@ import { openExternal } from '../../lib/desktop';
 import { cleanupVoipOnLogout, getCallState, setUserLoyaltyId, startOutgoingVoiceCallByLoyaltyId } from '../../voip/VoipClient';
 import { SUPPORT_DISPLAY_NAME, SUPPORT_LOYALTY_ID, SUPPORT_PHONE_NUMBER } from '../../support/constants';
 import { useSupportUnread } from '../../support/SupportChatProvider';
+import { NOTIFY_ROUTE, useNotificationsUnread } from '../../notifications/NotificationsProvider';
 import { disconnectSupportSocket } from '../../support/supportSocket';
 import './account.css';
 
@@ -54,6 +55,13 @@ const ChatIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
     <circle cx="8.5" cy="11" r="1.1" fill="currentColor" />
     <circle cx="12" cy="11" r="1.1" fill="currentColor" />
     <circle cx="15.5" cy="11" r="1.1" fill="currentColor" />
+  </svg>
+);
+/** Иконка колокольчика (строка «Уведомления»). */
+const BellIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg viewBox="0 0 24 24" fill="none" width={size} height={size} style={{ display: 'block' }} aria-hidden="true">
+    <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 );
 const UserIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
@@ -108,6 +116,7 @@ export const AccountScreen: React.FC = () => {
   const [supportError, setSupportError] = useState<string | null>(null);
   const { isDark, toggle: toggleTheme } = useTheme();
   const supportUnread = useSupportUnread();
+  const notificationsUnread = useNotificationsUnread();
 
   // Тост «Скопировано» / «Ошибка» (замена Alert.alert)
   useEffect(() => {
@@ -229,6 +238,23 @@ export const AccountScreen: React.FC = () => {
   const settingsBlocks = (
     <div className="account-settings">
       <div className="card account-settings__card">
+        {/* Уведомления (DESIGN.md: строка над «Чат с поддержкой») → центр уведомлений */}
+        <button type="button" className="account-row" onClick={() => nav.navigate(NOTIFY_ROUTE)}>
+          <span className="account-row__icon account-row__icon--brand" style={{ color: '#FE732E' }}>
+            <BellIcon size={16} />
+          </span>
+          <span className="account-row__text">
+            <span className="account-row__title">Уведомления</span>
+            <span className="account-row__subtitle">Заказы, оплата, напоминания и акции</span>
+          </span>
+          {notificationsUnread > 0 ? (
+            <span className="account-row__unread" aria-label={`Непрочитанных уведомлений: ${notificationsUnread}`}>
+              {notificationsUnread > 99 ? '99+' : notificationsUnread}
+            </span>
+          ) : null}
+          <Icon name="arrowRight" size={14} color="var(--text-tertiary)" />
+        </button>
+        <div className="account-row__hairline" />
         {/* Чат с поддержкой (Figma «Desktop / Account (+ чат)») — над «Звонок в поддержку» */}
         <button type="button" className="account-row" onClick={() => nav.navigate('supportChat')}>
           <span className="account-row__icon account-row__icon--blue" style={{ color: '#2BA9E2' }}>
