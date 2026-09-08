@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeContext';
 import type { RootState } from '@shared/modules/store';
 import { useUserAccess } from '../app/useUserAccess';
 import { useSupportUnread } from '../support/SupportChatProvider';
+import { useNotificationsUnread } from '../notifications/NotificationsProvider';
 
 // Сайдбар-рейл 88 pt (Figma «DESKTOP UI»): только иконки с подписями под ними.
 // Набор вкладок — как в таб-баре приложения (navigation/authStack.tsx):
@@ -25,6 +26,9 @@ export const RailSidebar: React.FC = () => {
   const { accessToken, user } = useSelector((s: RootState) => s.auth);
   const access = useUserAccess();
   const supportUnread = useSupportUnread();
+  const notificationsUnread = useNotificationsUnread();
+  // Бейдж «Аккаунта» = непрочитанные сообщения поддержки + непрочитанные уведомления
+  const accountBadge = supportUnread + notificationsUnread;
   const isLoggedIn = Boolean(accessToken);
   const items = NAV_ALL.filter(it => {
     if (it.to === '/ai') return isLoggedIn && access === 0;
@@ -47,10 +51,10 @@ export const RailSidebar: React.FC = () => {
           className={({ isActive }) => 'rail__item' + (isActive ? ' rail__item--active' : '')}>
           <span className="rail__icon">
             <Icon name={it.icon} size={it.icon === 'radiologo' ? 30 : 24} />
-            {/* Непрочитанные сообщения поддержки — бейдж на «Аккаунте» (вход в чат) */}
-            {it.to === '/account' && isLoggedIn && supportUnread > 0 ? (
-              <span className="rail__badge" aria-label={`Непрочитанных сообщений поддержки: ${supportUnread}`}>
-                {supportUnread > 99 ? '99+' : supportUnread}
+            {/* Непрочитанные сообщения поддержки + уведомления — бейдж на «Аккаунте» (вход в чат и центр уведомлений) */}
+            {it.to === '/account' && isLoggedIn && accountBadge > 0 ? (
+              <span className="rail__badge" aria-label={`Непрочитанных: ${accountBadge}`}>
+                {accountBadge > 99 ? '99+' : accountBadge}
               </span>
             ) : null}
           </span>
