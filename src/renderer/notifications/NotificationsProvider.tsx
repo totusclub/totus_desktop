@@ -245,8 +245,21 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   settingsRef.current = desktopSettings;
 
   const isLoggedIn = Boolean(fullAuth && accessToken && userId);
+  const isLoggedInRef = useRef(isLoggedIn);
+  isLoggedInRef.current = isLoggedIn;
 
   const setUnread = useCallback((n: number) => setUnreadState(Math.max(0, Number(n) || 0)), []);
+
+  // Перезапросить счётчик по REST (после (пере)подключения сокета и при возврате фокуса —
+  // пока сокет был разорван, notify:badge мог не дойти).
+  const refreshUnread = useCallback(() => {
+    if (!isLoggedInRef.current) return;
+    getUnread()
+      .then(res => {
+        if (isLoggedInRef.current && res && typeof res.unread === 'number') setUnreadState(Math.max(0, res.unread));
+      })
+      .catch(e => console.warn('[notify] не удалось обновить непрочитанные', e?.message || e));
+  }, []);
 
   const setDesktopSettings = useCallback((patch: Partial<DesktopNotifySettings>) => {
     setDesktopSettingsState(prev => {
@@ -315,6 +328,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   // События сокета (сокет держит SupportChatProvider — тот же namespace calling_api_v2).
   useEffect(() => {
     if (!isLoggedIn) return;
+    // Пока сокет был разорван (сон, сеть), notify:badge мог потеряться — при (пере)подключении
+    // досверяем счётчик через REST.
+    const offConnect = onSupportEvent('connect', () => refreshUnread());
     const offBadge = onSupportEvent('notify:badge', ev => {
       if (ev && typeof ev.unread === 'number') setUnreadState(Math.max(0, ev.unread));
     });
@@ -348,10 +364,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     });
     return () => {
+      offConnect();
       offBadge();
       offNew();
     };
-  }, [isLoggedIn, openNotification]);
+  }, [isLoggedIn, openNotification, refreshUnread]);
 
   // Бейдж на иконке приложения (Dock / taskbar).
   useEffect(() => {
@@ -359,11 +376,15 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [isLoggedIn, unread]);
 
   // Разрешение могли поменять в системных настройках — перечитываем при возврате фокуса.
+  // Заодно досверяем счётчик непрочитанных (окно могло быть свёрнуто, пока сокет переподключался).
   useEffect(() => {
-    const onFocus = () => setPermission(getNotificationPermission());
+    const onFocus = () => {
+      setPermission(getNotificationPermission());
+      refreshUnread();
+    };
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-  }, []);
+  }, [refreshUnread]);
 
   const value = useMemo<NotificationsContextValue>(
     () => ({
