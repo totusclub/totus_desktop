@@ -14,6 +14,8 @@ const desktop = {
   },
   getCaptcha: (): Promise<{ url: string; partition: string; preload: string }> =>
     ipcRenderer.invoke('desktop:get-captcha'),
+  // Бейдж непрочитанных уведомлений на иконке Dock (macOS) / taskbar (Windows, где поддерживается)
+  setBadgeCount: (count: number): Promise<boolean> => ipcRenderer.invoke('desktop:set-badge-count', count),
 };
 
 export type DesktopApi = typeof desktop;

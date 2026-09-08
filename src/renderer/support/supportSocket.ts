@@ -5,6 +5,7 @@ import { io, type Socket } from 'socket.io-client';
 import { VOIP_BASE_URL } from '@shared/config/server';
 import { voipSocketAuth } from '@shared/modules/api/voipAuth';
 import type { SupportChat, SupportMessage, SupportMessageMeta } from '@shared/modules/api/supportChat';
+import type { NotificationBadgeEvent, NotificationNewEvent } from '@shared/modules/api/notifications';
 
 export type SupportMessageEvent = { chat: SupportChat; message: SupportMessage };
 export type SupportChatUpdatedEvent = { chat: SupportChat };
@@ -16,6 +17,9 @@ export type SupportEventMap = {
   'support:chat-updated': SupportChatUpdatedEvent;
   'support:read': SupportReadEvent;
   'support:typing': SupportTypingEvent;
+  // Хаб уведомлений (та же комната u:<userId>): новое уведомление / счётчик непрочитанных
+  'notify:new': NotificationNewEvent;
+  'notify:badge': NotificationBadgeEvent;
   connect: undefined;
   disconnect: string;
 };
@@ -31,7 +35,7 @@ type Listener = (payload: any) => void;
 let socket: Socket | null = null;
 const listeners = new Map<SupportEventName, Set<Listener>>();
 
-const FORWARDED: SupportEventName[] = ['support:message', 'support:chat-updated', 'support:read', 'support:typing'];
+const FORWARDED: SupportEventName[] = ['support:message', 'support:chat-updated', 'support:read', 'support:typing', 'notify:new', 'notify:badge'];
 
 function dispatch(event: SupportEventName, payload: unknown): void {
   const set = listeners.get(event);

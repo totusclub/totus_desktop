@@ -8,6 +8,7 @@ export type DesktopApi = {
   getSystemTheme: () => Promise<ThemeName>;
   onSystemThemeChanged: (cb: (mode: ThemeName) => void) => () => void;
   getCaptcha: () => Promise<{ url: string; partition: string; preload: string }>;
+  setBadgeCount: (count: number) => Promise<boolean>;
 };
 
 declare global {
@@ -26,6 +27,7 @@ const fallback: DesktopApi = {
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
   onSystemThemeChanged: () => () => undefined,
   getCaptcha: async () => ({ url: '', partition: '', preload: '' }),
+  setBadgeCount: async () => false,
 };
 
 export const desktop: DesktopApi = (typeof window !== 'undefined' && window.desktop) || fallback;
@@ -33,4 +35,14 @@ export const desktop: DesktopApi = (typeof window !== 'undefined' && window.desk
 /** Открыть ссылку в системном браузере (оплата СБП, карта, документы). */
 export function openExternal(url: string): void {
   void desktop.openExternal(url);
+}
+
+/** Бейдж непрочитанных на иконке приложения (Dock/taskbar); старый preload без метода — молча пропускаем. */
+export function setBadgeCount(count: number): void {
+  try {
+    const fn = desktop.setBadgeCount;
+    if (typeof fn === 'function') void fn(count).catch(() => undefined);
+  } catch {
+    /* ignore */
+  }
 }
