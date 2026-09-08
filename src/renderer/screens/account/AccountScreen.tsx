@@ -11,15 +11,15 @@ import { ConfirmModal, Modal } from '../../components/Modal';
 import { useTheme } from '../../theme/ThemeContext';
 import { openExternal } from '../../lib/desktop';
 import { cleanupVoipOnLogout, getCallState, setUserLoyaltyId, startOutgoingVoiceCallByLoyaltyId } from '../../voip/VoipClient';
+import { SUPPORT_DISPLAY_NAME, SUPPORT_LOYALTY_ID, SUPPORT_PHONE_NUMBER } from '../../support/constants';
+import { useSupportUnread } from '../../support/SupportChatProvider';
+import { disconnectSupportSocket } from '../../support/supportSocket';
 import './account.css';
 
 // Порт component/account/Account.tsx (Figma «Desktop / Account»): слева карта лояльности,
 // справа группы настроек; Alert → inline-тосты / ConfirmModal; шторки → центрированные диалоги.
 
-// Support team loyalty ID — change this to your actual support account loyalty_id
-const SUPPORT_LOYALTY_ID = '0978 6356 3712 8057';
-const SUPPORT_DISPLAY_NAME = 'Поддержка Totus';
-const SUPPORT_PHONE_NUMBER = '+74951234567'; // Fallback phone number
+// Константы поддержки (loyalty_id, имя, телефон) — src/renderer/support/constants.ts (общие с чатом)
 
 type DecodedToken = {
   id?: string;
@@ -40,6 +40,20 @@ const InfoIcon: React.FC<{ size?: number }> = ({ size = 18 }) => (
   <svg viewBox="0 0 24 24" fill="none" width={size} height={size} style={{ display: 'block' }} aria-hidden="true">
     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
     <path d="M12 11v5M12 8h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+/** Иконка чата (строка «Чат с поддержкой»); в стиле остальных иконок приложения — currentColor. */
+const ChatIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
+  <svg viewBox="0 0 24 24" fill="none" width={size} height={size} style={{ display: 'block' }} aria-hidden="true">
+    <path
+      d="M12 3C6.925 3 3 6.58 3 10.9c0 2.23 1.03 4.24 2.72 5.66L5 21l4.3-2.03c.86.2 1.77.31 2.7.31 5.075 0 9-3.58 9-7.9S17.075 3 12 3Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+    <circle cx="8.5" cy="11" r="1.1" fill="currentColor" />
+    <circle cx="12" cy="11" r="1.1" fill="currentColor" />
+    <circle cx="15.5" cy="11" r="1.1" fill="currentColor" />
   </svg>
 );
 const UserIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
@@ -93,6 +107,7 @@ export const AccountScreen: React.FC = () => {
   const [toast, setToast] = useState<{ title: string; text: string; error?: boolean } | null>(null);
   const [supportError, setSupportError] = useState<string | null>(null);
   const { isDark, toggle: toggleTheme } = useTheme();
+  const supportUnread = useSupportUnread();
 
   // Тост «Скопировано» / «Ошибка» (замена Alert.alert)
   useEffect(() => {
@@ -168,6 +183,7 @@ export const AccountScreen: React.FC = () => {
     setLogoutModalVisible(false);
     // Clean up call-related state before logout
     await cleanupVoipOnLogout();
+    disconnectSupportSocket();
     dispatch(logoutReducer());
     nav.reset('login');
   };
@@ -176,6 +192,7 @@ export const AccountScreen: React.FC = () => {
     // TODO: Implement account deletion API call (как в приложении — пока только выход)
     setDeleteModalVisible(false);
     await cleanupVoipOnLogout();
+    disconnectSupportSocket();
     dispatch(logoutReducer());
     nav.reset('login');
   };
@@ -212,6 +229,23 @@ export const AccountScreen: React.FC = () => {
   const settingsBlocks = (
     <div className="account-settings">
       <div className="card account-settings__card">
+        {/* Чат с поддержкой (Figma «Desktop / Account (+ чат)») — над «Звонок в поддержку» */}
+        <button type="button" className="account-row" onClick={() => nav.navigate('supportChat')}>
+          <span className="account-row__icon account-row__icon--blue" style={{ color: '#2BA9E2' }}>
+            <ChatIcon size={16} />
+          </span>
+          <span className="account-row__text">
+            <span className="account-row__title">Чат с поддержкой</span>
+            <span className="account-row__subtitle">Напишите нам — ответим в чате</span>
+          </span>
+          {supportUnread > 0 ? (
+            <span className="account-row__unread" aria-label={`Непрочитанных: ${supportUnread}`}>
+              {supportUnread > 99 ? '99+' : supportUnread}
+            </span>
+          ) : null}
+          <Icon name="arrowRight" size={14} color="var(--text-tertiary)" />
+        </button>
+        <div className="account-row__hairline" />
         {showCallingSupport ? (
           <>
             <button type="button" className="account-row" onClick={() => setSupportModalVisible(true)}>

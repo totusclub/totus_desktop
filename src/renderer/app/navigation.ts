@@ -17,6 +17,7 @@ export const ROUTES: Record<string, string> = {
   orderDetails: '/orders/details',
   favorites: '/favorites',
   account: '/account',
+  supportChat: '/support-chat',
   login: '/login',
   signup: '/signup',
   verification: '/verification',

@@ -45,6 +45,8 @@ src/renderer/
   screens/           home, search, hotel, tickets, booking, checkout, orders, favorites, account, auth, onboarding
   components/        HotelCard, DatePicker, RangeSlider, Popover, Modal, SmartCaptcha (webview)
   voip/              VoipClient (WebRTC + socket.io к voip.totus.club), CallDialog — только звонок в поддержку
+  support/           Чат с поддержкой: supportSocket (socket.io к voip.totus.club), SupportChatProvider
+                     (непрочитанные, уведомления), useSupportChat (состояние экрана), constants
   icons/             SVG-иконки приложения (currentColor)
 ```
 
@@ -65,6 +67,30 @@ src/renderer/
   Гейт как в приложении: Totus AI доступен авторизованным с `access === 0`.
 - **Тема**: токены `src/theme/light.ts` / `dark.ts` приложения повторены в `tokens.css`; виджет Милы (Tailwind v4)
   перекрашен через CSS-переменные в `ai/ai.css`.
+
+## Чат с поддержкой
+
+Экран «Чат с поддержкой» (`#/support-chat`, Figma «Desktop / Support chat» и «Support chat (empty)») — вход из
+«Аккаунта» (строка «Чат с поддержкой» над «Звонок в поддержку»). Бэкенд — calling_api_v2 (`voip.totus.club`,
+модуль `lib/supportChat.js`), один диалог на пользователя.
+
+- **REST** — `src/shared/modules/api/supportChat.ts`: `GET /api/support/chat` (диалог + последние сообщения +
+  `hours.text` для пустого состояния), `GET /api/support/chat/messages?before=` (история вверх),
+  `POST /api/support/chat/messages` (`{body, clientMsgId, meta}`), `POST /api/support/chat/read`. Все запросы
+  через `voipFetch` с Bearer JWT пользователя; ошибки сервера показываются по-русски (`rate_limited`,
+  `message_too_long`, `support_chat_not_migrated` / сеть → «Чат временно недоступен»).
+- **Socket.io** — `src/renderer/support/supportSocket.ts`: отдельный сокет к тому же namespace, что и звонки
+  (`auth: voipSocketAuth`, `transports: ['websocket']`); сокет звонков в `VoipClient` не трогается. Входящие
+  `support:message` / `support:chat-updated` / `support:read` / `support:typing`; отправка `support:send`
+  (ack) и `support:read` через сокет, при отсутствии соединения — REST.
+- **SupportChatProvider** (в `AppShell`, как `VoipManager`): подключает сокет после входа, считает
+  непрочитанные (`chat.userUnread`) — бейдж на пункте «Аккаунт» в рейле и в строке «Чат с поддержкой»;
+  при новом сообщении поддержки и неактивном окне показывает системное уведомление
+  (`new Notification('Поддержка Totus')`, клик открывает чат). При логауте сокет отключается.
+- **Экран** — `screens/support/SupportChatScreen.tsx` + `support.css`: структура как у Totus AI (колонка 800,
+  композер внизу), разделители дат «Сегодня»/«Вчера», карточка заказа из `meta.orderId` → экран заказа,
+  оптимистичная отправка с повтором по `clientMsgId`, «печатает…», чипы тем, кнопка «Позвонить» — тот же
+  VoIP-поток, что «Звонок через приложение» в «Аккаунте». Вложения пока отключены (кнопка-скрепка).
 
 ## Известные ограничения / что проверить при первой сборке
 

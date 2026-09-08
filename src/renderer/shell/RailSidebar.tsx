@@ -5,6 +5,7 @@ import { Icon, type IconName } from '../icons';
 import { useTheme } from '../theme/ThemeContext';
 import type { RootState } from '@shared/modules/store';
 import { useUserAccess } from '../app/useUserAccess';
+import { useSupportUnread } from '../support/SupportChatProvider';
 
 // Сайдбар-рейл 88 pt (Figma «DESKTOP UI»): только иконки с подписями под ними.
 // Набор вкладок — как в таб-баре приложения (navigation/authStack.tsx):
@@ -23,6 +24,7 @@ export const RailSidebar: React.FC = () => {
   const { isDark, toggle } = useTheme();
   const { accessToken, user } = useSelector((s: RootState) => s.auth);
   const access = useUserAccess();
+  const supportUnread = useSupportUnread();
   const isLoggedIn = Boolean(accessToken);
   const items = NAV_ALL.filter(it => {
     if (it.to === '/ai') return isLoggedIn && access === 0;
@@ -43,7 +45,15 @@ export const RailSidebar: React.FC = () => {
           to={it.to}
           end={it.to === '/'}
           className={({ isActive }) => 'rail__item' + (isActive ? ' rail__item--active' : '')}>
-          <Icon name={it.icon} size={it.icon === 'radiologo' ? 30 : 24} />
+          <span className="rail__icon">
+            <Icon name={it.icon} size={it.icon === 'radiologo' ? 30 : 24} />
+            {/* Непрочитанные сообщения поддержки — бейдж на «Аккаунте» (вход в чат) */}
+            {it.to === '/account' && isLoggedIn && supportUnread > 0 ? (
+              <span className="rail__badge" aria-label={`Непрочитанных сообщений поддержки: ${supportUnread}`}>
+                {supportUnread > 99 ? '99+' : supportUnread}
+              </span>
+            ) : null}
+          </span>
           <span>{it.label}</span>
         </NavLink>
       ))}

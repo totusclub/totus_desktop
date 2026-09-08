@@ -42,15 +42,19 @@
 .account-row__icon--orange { background: rgba(255, 149, 0, 0.12); }
 .account-row__icon--violet { background: rgba(88, 86, 214, 0.1); }
 .account-row__icon--brand { background: rgba(254, 115, 46, 0.12); }
+.account-row__icon--blue { background: rgba(43, 169, 226, 0.12); }
 [data-theme='dark'] .account-row__icon--green { background: rgba(52, 199, 89, 0.18); }
 [data-theme='dark'] .account-row__icon--orange { background: rgba(255, 149, 0, 0.18); }
 [data-theme='dark'] .account-row__icon--violet { background: rgba(88, 86, 214, 0.18); }
 [data-theme='dark'] .account-row__icon--brand { background: rgba(254, 115, 46, 0.2); }
+[data-theme='dark'] .account-row__icon--blue { background: rgba(43, 169, 226, 0.2); }
 .account-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .account-row__title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
 .account-row__title--solo { flex: 1; }
 .account-row__subtitle { font-size: 12px; letter-spacing: -0.1px; color: var(--text-tertiary); }
 .account-row__hairline { height: 1px; background: var(--border); margin-left: 52px; }
+/* Точка непрочитанных сообщений поддержки в строке «Чат с поддержкой» */
+.account-row__unread { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 11px; line-height: 20px; font-weight: 600; text-align: center; flex: none; }
 /* Switch: в Dark трек фиолетовый, в Light — зелёный (как trackColor в приложении) */
 .account-row .toggle.toggle--on { background: #34C759; }
 .account-row .toggle.account-toggle--dark { background: #5856D6; }
