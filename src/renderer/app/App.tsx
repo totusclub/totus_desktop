@@ -21,6 +21,8 @@ import { OrderDetailsScreen } from '../screens/orders/OrderDetailsScreen';
 import { FavoritesScreen } from '../screens/favorites/FavoritesScreen';
 import { AccountScreen } from '../screens/account/AccountScreen';
 import { SupportChatScreen } from '../screens/support/SupportChatScreen';
+import { NotificationsScreen } from '../screens/notifications/NotificationsScreen';
+import { NotificationSettingsScreen } from '../screens/notifications/NotificationSettingsScreen';
 import { PrivacyPolicyScreen } from '../screens/account/PrivacyPolicyScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { SignupScreen } from '../screens/auth/SignupScreen';
@@ -52,6 +54,8 @@ export const App: React.FC = () => (
                 <Route path="/favorites" element={<FavoritesScreen />} />
                 <Route path="/account" element={<AccountScreen />} />
                 <Route path="/support-chat" element={<SupportChatScreen />} />
+                <Route path="/account/notifications" element={<NotificationsScreen />} />
+                <Route path="/account/notifications/settings" element={<NotificationSettingsScreen />} />
                 <Route path="/privacy" element={<PrivacyPolicyScreen />} />
                 <Route path="/login" element={<LoginScreen />} />
                 <Route path="/signup" element={<SignupScreen />} />

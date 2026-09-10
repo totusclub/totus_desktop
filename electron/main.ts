@@ -112,6 +112,15 @@ ipcMain.handle('desktop:get-captcha', () => ({
   preload: `file://${path.join(__dirname, 'captchaPreload.js')}`,
 }));
 ipcMain.handle('desktop:system-theme', () => (nativeTheme.shouldUseDarkColors ? 'dark' : 'light'));
+// Бейдж непрочитанных уведомлений (Dock на macOS; на Windows setBadgeCount возвращает false — игнорируем).
+ipcMain.handle('desktop:set-badge-count', (_e, n: unknown) => {
+  const count = Math.max(0, Math.floor(Number(n) || 0));
+  try {
+    return app.setBadgeCount(count);
+  } catch {
+    return false;
+  }
+});
 
 nativeTheme.on('updated', () => {
   mainWindow?.webContents.send('desktop:system-theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');

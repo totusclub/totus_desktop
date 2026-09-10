@@ -1,0 +1,85 @@
+/* Центр уведомлений (DESIGN.md, desktop): колонка 800 по центру, как чат поддержки / Totus AI.
+   Только токены темы — Light / Dark без отдельных цветов (кроме цветов категорий). */
+
+.notify-col { width: 800px; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.notify-header__right { display: flex; align-items: center; gap: 8px; }
+.notify-header__readall { gap: 6px; }
+.notify-header__gear { width: 40px; height: 40px; border-radius: 10px; background: var(--background-secondary); display: grid; place-items: center; color: var(--text); flex: none; }
+.notify-header__gear:hover { background: var(--background-tertiary); }
+.notify-error { padding: 0 4px; }
+
+/* Чипы-фильтры: активный — brand с белым текстом, остальные серые */
+.notify-filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.notify-filters::-webkit-scrollbar { display: none; }
+.notify-chip { flex: none; padding: 7px 14px; border-radius: var(--radius-pill); background: var(--background-secondary); color: var(--text-secondary); font-size: 13px; line-height: 18px; font-weight: 500; white-space: nowrap; transition: background .15s, color .15s; }
+.notify-chip:hover { background: var(--background-tertiary); }
+.notify-chip--active, .notify-chip--active:hover { background: var(--brand); color: #FFFFFF; }
+
+/* Группы «Сегодня / Вчера / Ранее» */
+.notify-group { display: flex; flex-direction: column; gap: 8px; }
+.notify-group__title { font-size: 13px; font-weight: 500; color: var(--text-tertiary); padding: 0 4px; }
+.notify-list { display: flex; flex-direction: column; overflow: hidden; }
+.notify-list.card { border-color: var(--border-light); }
+
+/* Элемент: иконка категории 44, заголовок 15 semibold, текст 2 строки, время справа сверху */
+.notify-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; width: 100%; text-align: left; color: var(--text); background: var(--card-background); position: relative; }
+.notify-item + .notify-item::before { content: ''; position: absolute; left: 74px; right: 0; top: 0; height: 1px; background: var(--border-light); }
+.notify-item:not(.notify-item--skeleton):hover { background: var(--background-secondary); }
+.notify-item--unread { background: var(--brand-soft); }
+.notify-item--unread:not(.notify-item--skeleton):hover { background: color-mix(in srgb, var(--brand) 20%, var(--card-background)); }
+.notify-item--skeleton { cursor: default; }
+.notify-item--skeleton .notify-item__text { gap: 8px; }
+.notify-item__icon { border-radius: 50%; display: grid; place-items: center; flex: none; }
+[data-theme='dark'] .notify-item__icon { filter: brightness(1.1); }
+.notify-item__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+.notify-item__head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.notify-item__title { font-size: 15px; font-weight: 600; line-height: 20px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notify-item__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); flex: none; }
+.notify-item__body { font-size: 13.5px; line-height: 18px; color: var(--text-tertiary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.notify-item__time { flex: none; font-size: 12px; line-height: 16px; color: var(--text-tertiary); padding-top: 4px; white-space: nowrap; }
+.notify-more { margin-top: 4px; }
+
+/* Пустое состояние */
+.notify-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 56px 32px 40px; text-align: center; color: var(--text-tertiary); }
+.notify-empty__icon { width: 72px; height: 72px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; margin-bottom: 6px; }
+.notify-empty__text { max-width: 420px; font-size: 14px; line-height: 20px; }
+.notify-pushoff { margin-top: 22px; display: flex; align-items: center; gap: 12px; width: 100%; max-width: 520px; padding: 12px 14px; border-radius: 14px; background: var(--background-secondary); text-align: left; }
+.notify-pushoff__icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255, 193, 7, 0.16); color: var(--warning); display: grid; place-items: center; flex: none; }
+.notify-pushoff__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.notify-pushoff__title { font-size: 14px; font-weight: 600; color: var(--text); }
+.notify-pushoff__sub { font-size: 12px; color: var(--text-tertiary); }
+
+/* Настройки: две колонки */
+.notify-settings { display: flex; flex-direction: column; gap: 16px; max-width: 1080px; }
+.notify-settings__cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.notify-settings__col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.notify-section-title { font-size: 12px; font-weight: 500; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-tertiary); padding: 0 4px; }
+.notify-section-title--gap { margin-top: 14px; }
+.notify-card { border-radius: 14px; overflow: hidden; border-color: var(--border-light); }
+.notify-setting { display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 56px; }
+.notify-setting__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.notify-setting__title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
+.notify-setting__subtitle { font-size: 12px; line-height: 16px; letter-spacing: -0.1px; color: var(--text-tertiary); }
+.notify-setting__hairline { height: 1px; background: var(--border); margin-left: 14px; }
+.notify-setting__hairline--device { margin-left: 34px; }
+.notify-hint { font-size: 12px; line-height: 17px; color: var(--text-tertiary); padding: 0 4px; }
+.toggle.toggle--disabled { opacity: .45; cursor: default; }
+.toggle.toggle--disabled.toggle--on { background: var(--text-disabled); }
+
+/* «Ваши устройства»: зелёная точка + «Имя · платформа» */
+.notify-device { display: flex; align-items: center; gap: 10px; padding: 12px 14px; min-height: 46px; font-size: 14px; color: var(--text); }
+.notify-device--muted { color: var(--text-tertiary); font-size: 13px; }
+.notify-device__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); flex: none; }
+.notify-device__dot--off { background: var(--text-disabled); }
+.notify-device__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notify-device__ok { color: var(--success); display: inline-flex; }
+
+/* Диалог «Включить уведомления?» (480) */
+.notify-prompt { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.notify-prompt__icon { width: 64px; height: 64px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; margin-bottom: 16px; }
+.notify-prompt__title { font-size: 22px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+.notify-prompt__text { font-size: 14px; line-height: 20px; color: var(--text-tertiary); margin-bottom: 18px; }
+.notify-prompt__list { list-style: none; margin: 0 0 22px; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.notify-prompt__item { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); }
+.notify-prompt__check { width: 24px; height: 24px; border-radius: 50%; background: rgba(57, 191, 135, 0.14); color: var(--success); display: grid; place-items: center; flex: none; }
+.notify-prompt__actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
