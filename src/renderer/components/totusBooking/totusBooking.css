@@ -1,0 +1,71 @@
+/* Статусы бронирования наших номеров (оператор Arlekino, без Level.Travel) — Figma «ROOMS · Bookings · Desktop».
+   Light + Dark через токены темы (tokens.css); цвета статусов — как ORDER_STATUS_COLORS. */
+
+/* ---------- Баннер статуса (жёлтый / зелёный / красный) ---------- */
+.tb-banner { display: flex; gap: 12px; align-items: flex-start; width: 100%; padding: 14px 16px; border-radius: 16px; background: var(--background-secondary); border: 1px solid var(--border-secondary); }
+.tb-banner__icon { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex: none; color: var(--text-tertiary); }
+.tb-banner__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tb-banner__title { font-size: 15px; font-weight: 600; line-height: 20px; color: var(--text); }
+.tb-banner__text { font-size: 14px; line-height: 18px; color: var(--text-secondary); }
+.tb-banner--pending { background: rgba(206, 133, 8, 0.12); border-color: rgba(206, 133, 8, 0.3); }
+.tb-banner--pending .tb-banner__icon { color: #CE8508; }
+.tb-banner--success { background: rgba(40, 133, 86, 0.12); border-color: rgba(40, 133, 86, 0.3); }
+.tb-banner--success .tb-banner__icon { color: #288556; }
+.tb-banner--danger { background: rgba(207, 48, 48, 0.1); border-color: rgba(207, 48, 48, 0.3); }
+.tb-banner--danger .tb-banner__icon { color: #CF3030; }
+.tb-banner--info { background: rgba(13, 119, 211, 0.1); border-color: rgba(13, 119, 211, 0.3); }
+.tb-banner--info .tb-banner__icon { color: #0D77D3; }
+
+/* ---------- Панель «Статус / Оплачено / Туристы» в карточке заказа (макет Desktop) ---------- */
+.tb-panel { background: var(--background-secondary); border: 1px solid var(--border-secondary); border-radius: 16px; padding: 4px 16px; }
+.tb-panel__section { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.tb-panel__section:last-child { border-bottom: 0; }
+.tb-panel__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.tb-panel__title { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); }
+.tb-panel__title--danger { color: var(--error); }
+.tb-panel__title--success { color: #288556; }
+.tb-panel__subtitle { font-size: 13px; line-height: 18px; color: var(--text-tertiary); }
+.tb-panel__amount { font-size: 14px; font-weight: 500; line-height: 18px; color: var(--text); white-space: nowrap; flex: none; }
+.tb-panel__amount--danger { color: var(--error); }
+.tb-panel__amount--success { color: #288556; }
+.tb-panel__amount--muted { color: var(--text-tertiary); }
+
+/* ---------- Действия ---------- */
+.tb-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.tb-actions--row { flex-direction: row; flex-wrap: wrap; }
+.tb-actions--row .btn { flex: 1 1 auto; }
+.btn--dark { background: var(--sbp); color: #FFFFFF; }
+
+/* ---------- Строки в карточке списка ---------- */
+.tb-operator { font-size: 13px; line-height: 18px; color: var(--text-tertiary); margin-top: 4px; }
+.tb-operator > span { color: var(--text); font-weight: 500; }
+.tb-note { font-size: 13px; line-height: 18px; margin-top: 6px; color: var(--text-tertiary); }
+.tb-note--danger { color: var(--error); }
+.tb-note--success { color: #288556; }
+.order-card__actions { width: 100%; margin-top: 16px; }
+
+/* ---------- Ваучер (строка в блоке «Документы») ---------- */
+.tb-voucher { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; text-align: left; color: var(--text); border-radius: 12px; background: var(--card-background); border: 1px solid var(--border-secondary); margin-top: 8px; }
+.tb-voucher--btn { cursor: pointer; }
+.tb-voucher--btn:hover { background: var(--background-tertiary); }
+.tb-voucher__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tb-voucher__title { font-size: 15px; font-weight: 500; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-voucher__sub { font-size: 12px; line-height: 16px; color: var(--text-tertiary); }
+.tb-voucher__action { font-size: 14px; font-weight: 500; color: var(--brand); white-space: nowrap; }
+.tb-voucher__action--muted { color: var(--text-disabled); }
+
+/* ---------- Экран «Оплата прошла» (макет «Оформление — успех») ---------- */
+.tb-success { min-height: calc(100vh - var(--title-bar-h)); display: flex; align-items: flex-start; justify-content: center; padding: 40px var(--content-pad); }
+.tb-success__card { width: 700px; max-width: 100%; padding: 40px 40px 32px; border-radius: 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.tb-success__icon { display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: rgba(40, 133, 86, 0.12); color: #288556; }
+.tb-success__head { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.tb-success__title { font-size: 28px; font-weight: 600; line-height: 34px; color: var(--text); }
+.tb-success__subtitle { max-width: 600px; font-size: 16px; line-height: 22px; color: var(--text-secondary); }
+.tb-success__steps { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.tb-success__steps-title { font-size: 18px; font-weight: 600; line-height: 22px; color: var(--text); }
+.tb-success__step { display: flex; gap: 12px; align-items: flex-start; }
+.tb-success__step-num { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; flex: none; background: var(--brand-soft); color: var(--brand); font-size: 13px; font-weight: 600; }
+.tb-success__step-body { display: flex; flex-direction: column; gap: 2px; }
+.tb-success__step-title { font-size: 16px; font-weight: 500; line-height: 20px; color: var(--text); }
+.tb-success__step-text { font-size: 14px; line-height: 18px; color: var(--text-tertiary); }
+.tb-success__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
