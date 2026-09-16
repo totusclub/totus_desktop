@@ -56,6 +56,16 @@ const roomTypeName: { [key: string]: string } = {
   HBL: 'Завтрак и обед',
 };
 
+// Стили групп «Arlekino»/«Level.Travel» (токены темы, без правок hotel.css).
+const sourceGroupStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 };
+const sourceGroupTitleStyle: React.CSSProperties = {
+  fontSize: 18,
+  fontWeight: 700,
+  color: 'var(--text)',
+  paddingBottom: 8,
+  borderBottom: '1px solid var(--border-secondary)',
+};
+
 const AllOptionsModalContent: React.FC<Omit<Props, 'visible' | 'room'> & { room: HotelRoom }> = ({
   onClose,
   room,
@@ -240,8 +250,8 @@ const AllOptionsModalContent: React.FC<Omit<Props, 'visible' | 'room'> & { room:
       {/* Content */}
       <div className="hotel-modal__scroll" style={{ maxHeight: 'calc(100vh - 420px)' }}>
         {offerGroups.map(group => (
-          <div key={group.source} className="hotel-options__source">
-            <div className="hotel-options__source-title">{group.label}</div>
+          <div key={group.source} className="hotel-options__source" style={sourceGroupStyle}>
+            <div className="hotel-options__source-title" style={sourceGroupTitleStyle}>{group.label}</div>
             {group.sections.map(({ mealTypeId, mealType, offers }) => {
               const expandKey = `${group.source}:${mealTypeId}`;
               const showAll = Boolean(expandedMealTypes[expandKey]);
