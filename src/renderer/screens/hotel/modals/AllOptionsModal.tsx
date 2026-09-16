@@ -11,6 +11,7 @@ import {
   getAiPriceChangeLabel,
 } from '@shared/utils/hotelUtils/aiRoomPick';
 import { extractOperators, groupOffersByMealType, formatOfferDate, formatOfferPrice } from '@shared/utils/hotelUtils/roomHelpers';
+import { OFFER_GROUP_LABELS, OFFER_GROUP_ORDER, getOfferSource, type OfferSource } from '@shared/utils/roomOffers';
 import { createPackage } from '@shared/modules/api/levelTravelApi';
 import { extractPackageId } from '@shared/utils/hotelUtils/packageHelpers';
 import { getOfferPriceSubtitle, navigateAfterPackageCreate, normalizeSearchType } from '@shared/utils/bookingFlowUtils';
@@ -22,6 +23,9 @@ import { AiPickBadge } from '../../../components/HotelCard';
 // Порт hotel/modals/AllOptionsModal(+Content).tsx: «Все варианты проживания», чипы операторов,
 // предложения по типу питания, «Выбрать … ₽» → createPackage → navigateAfterPackageCreate.
 // Alert.alert → инлайновая ошибка (.error-text).
+// Room Type v3: одна карточка номера, внутри две группы предложений — «Arlekino» (наши,
+// `lt_extras.totus.custom`) и «Level.Travel» (оригинальные LT). Booking — по `offer.id` выбранной строки:
+// `t…` backend перехватывает в наш flow, LT-id идёт в обычный LT flow.
 
 type Props = {
   visible: boolean;
@@ -129,6 +133,25 @@ const AllOptionsModalContent: React.FC<Omit<Props, 'visible' | 'room'> & { room:
     return sorted;
   }, [filteredRoom, selectedOperator]);
 
+  // Room Type v3: две группы — «Arlekino» и «Level.Travel». Фильтры по оператору/дате/ночам
+  // уже применены выше к обеим; внутри группы — секции по питанию, предложения по цене.
+  // Пустые группы/секции не показываем; ничего не дедуплицируем.
+  const offerGroups = useMemo(
+    () =>
+      OFFER_GROUP_ORDER.map((source: OfferSource) => ({
+        source,
+        label: OFFER_GROUP_LABELS[source],
+        sections: Object.entries(offersByMealType)
+          .map(([mealTypeId, { mealType, offers }]) => ({
+            mealTypeId,
+            mealType,
+            offers: offers.filter(offer => getOfferSource(offer) === source),
+          }))
+          .filter(section => section.offers.length > 0),
+      })).filter(group => group.sections.length > 0),
+    [offersByMealType],
+  );
+
   const formatHiddenOffersLabel = (count: number) => {
     if (count === 1) return 'вариант';
     if (count < 5) return 'варианта';
@@ -216,60 +239,66 @@ const AllOptionsModalContent: React.FC<Omit<Props, 'visible' | 'room'> & { room:
 
       {/* Content */}
       <div className="hotel-modal__scroll" style={{ maxHeight: 'calc(100vh - 420px)' }}>
-        {Object.entries(offersByMealType).map(([mealTypeId, { mealType, offers }]) => {
-          const showAll = Boolean(expandedMealTypes[mealTypeId]);
-          const hiddenCount = Math.max(0, offers.length - 1);
-          const visibleOffers = showAll ? offers : offers.slice(0, 1);
+        {offerGroups.map(group => (
+          <div key={group.source} className="hotel-options__source">
+            <div className="hotel-options__source-title">{group.label}</div>
+            {group.sections.map(({ mealTypeId, mealType, offers }) => {
+              const expandKey = `${group.source}:${mealTypeId}`;
+              const showAll = Boolean(expandedMealTypes[expandKey]);
+              const hiddenCount = Math.max(0, offers.length - 1);
+              const visibleOffers = showAll ? offers : offers.slice(0, 1);
 
-          return (
-            <div key={mealTypeId} className="hotel-options__meal">
-              <div className="hotel-options__meal-title">{roomTypeName[mealTypeId] || mealType.description || mealTypeId}</div>
+              return (
+                <div key={expandKey} className="hotel-options__meal">
+                  <div className="hotel-options__meal-title">{roomTypeName[mealTypeId] || mealType.description || mealTypeId}</div>
 
-              <div className="hotel-options__list">
-                {visibleOffers.map((offer, index) => {
-                  const isSelected = selectedOffer?.id === offer.id && selectedOffer?.operator_id === offer.operator_id;
-                  const isAiOffer =
-                    isAiSelectedRoom && isOfferHighlightedByAiPick(offer, mealTypeId, enrichedAiRoomPick, selectedDate, room);
-                  const aiPriceChange = isAiOffer ? resolveAiPriceChange(enrichedAiRoomPick, offer) : null;
-                  const isLastItem = index === visibleOffers.length - 1 && hiddenCount === 0;
+                  <div className="hotel-options__list">
+                    {visibleOffers.map((offer, index) => {
+                      const isSelected = selectedOffer?.id === offer.id && selectedOffer?.operator_id === offer.operator_id;
+                      const isAiOffer =
+                        isAiSelectedRoom && isOfferHighlightedByAiPick(offer, mealTypeId, enrichedAiRoomPick, selectedDate, room);
+                      const aiPriceChange = isAiOffer ? resolveAiPriceChange(enrichedAiRoomPick, offer) : null;
+                      const isLastItem = index === visibleOffers.length - 1 && hiddenCount === 0;
 
-                  return (
-                    <button
-                      type="button"
-                      key={`${offer.id}-${offer.operator_id}-${index}`}
-                      className={'hotel-offer' + (isLastItem ? ' hotel-offer--last' : '')}
-                      onClick={() => handleOfferPress(offer)}>
-                      <span className="hotel-offer__left">
-                        {isAiOffer ? <AiPickBadge variant="inline" /> : null}
-                        <span className="hotel-offer__nights">
-                          {offer.nights_count} ночей {formatOfferDate(offer.start_date)}
-                        </span>
-                        <span className="hotel-offer__operator">{offer.operator_name}</span>
-                      </span>
-                      <span className="hotel-offer__right">
-                        <span className="hotel-offer__price">{formatOfferPrice(offer.price)}₽</span>
-                        {aiPriceChange ? (
-                          <span className="hotel-offer__delta" style={{ color: aiPriceChange.delta > 0 ? 'var(--brand)' : 'var(--success)' }}>
-                            {getAiPriceChangeLabel(aiPriceChange)}
+                      return (
+                        <button
+                          type="button"
+                          key={`${offer.id}-${offer.operator_id}-${index}`}
+                          className={'hotel-offer' + (isLastItem ? ' hotel-offer--last' : '')}
+                          onClick={() => handleOfferPress(offer)}>
+                          <span className="hotel-offer__left">
+                            {isAiOffer ? <AiPickBadge variant="inline" /> : null}
+                            <span className="hotel-offer__nights">
+                              {offer.nights_count} ночей {formatOfferDate(offer.start_date)}
+                            </span>
+                            <span className="hotel-offer__operator">{offer.operator_name}</span>
                           </span>
-                        ) : null}
-                      </span>
-                      <span className={'hotel-offer__radio' + (isSelected ? ' hotel-offer__radio--on' : '')} aria-hidden="true">
-                        {isSelected ? <span className="hotel-offer__radio-dot" /> : null}
-                      </span>
-                    </button>
-                  );
-                })}
+                          <span className="hotel-offer__right">
+                            <span className="hotel-offer__price">{formatOfferPrice(offer.price)}₽</span>
+                            {aiPriceChange ? (
+                              <span className="hotel-offer__delta" style={{ color: aiPriceChange.delta > 0 ? 'var(--brand)' : 'var(--success)' }}>
+                                {getAiPriceChangeLabel(aiPriceChange)}
+                              </span>
+                            ) : null}
+                          </span>
+                          <span className={'hotel-offer__radio' + (isSelected ? ' hotel-offer__radio--on' : '')} aria-hidden="true">
+                            {isSelected ? <span className="hotel-offer__radio-dot" /> : null}
+                          </span>
+                        </button>
+                      );
+                    })}
 
-                {hiddenCount > 0 ? (
-                  <button type="button" className="hotel-options__more" onClick={() => toggleMealTypeExpanded(mealTypeId)}>
-                    {showAll ? 'Скрыть варианты' : `Показать ещё ${hiddenCount} ${formatHiddenOffersLabel(hiddenCount)}`}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
+                    {hiddenCount > 0 ? (
+                      <button type="button" className="hotel-options__more" onClick={() => toggleMealTypeExpanded(expandKey)}>
+                        {showAll ? 'Скрыть варианты' : `Показать ещё ${hiddenCount} ${formatHiddenOffersLabel(hiddenCount)}`}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {errorMessage ? <div className="error-text">{errorMessage}</div> : null}
