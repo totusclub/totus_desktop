@@ -15,14 +15,47 @@ import {
   type OrderDocumentApiItem,
 } from '@shared/utils/ordersUtils';
 import { getOrder, getOrderDocuments } from '@shared/modules/api/levelTravelApi';
+import {
+  getTotusBooking,
+  getTotusBookingShortLabel,
+  getTotusBookingStatusColor,
+  type TotusBooking,
+} from '@shared/utils/totusBooking';
 import { useAppNavigation, useRouteParams } from '../../app/navigation';
 import { PageHeader } from '../../shell/PageHeader';
 import { SbpPayButton } from '../checkout/SbpPayButton';
+import { TotusBookingSummary } from '../../components/totusBooking/TotusBookingSummary';
 import { OrderDetailsSections } from './OrderDetailsSections';
 import './orders.css';
 
 // Порт component/orders/order/OrderDetails.tsx: PageHeader «Тур № N» + статус; слева карточка заказа
 // (статус, «Получение заказа», оплата, «Туристы», «Итого», СБП «Оплатить»), справа — секции OrderDetailsSections.
+// Внутренний заказ (наш номер, оператор Arlekino, `totus_booking` в ответе /orders) — Figma «ROOMS · Bookings · Desktop»:
+// «Заказ № N» + пилюля «Проверяем / Подтверждено / Отклонено», слева панель «Статус / Оплачено (Возврат) / Туристы»
+// и кнопки поддержки, справа — документы с ваучером, «Туроператор: Arlekino». Действий Level.Travel нет.
+
+/** Подзаголовок шапки для внутреннего заказа: «Проверяем бронирование · подтвердим в течение 24 часов». */
+function getTotusHeaderSubtitle(booking: TotusBooking): string {
+  switch (booking.status) {
+    case 'confirmed':
+      return booking.hotelBookingRef
+        ? `Бронирование подтверждено · номер брони ${booking.hotelBookingRef}`
+        : 'Бронирование подтверждено';
+    case 'rejected':
+    case 'cancelled': {
+      const refund = booking.refund
+        ? booking.refund.status === 'done'
+          ? 'возврат выполнен'
+          : 'возврат выполним в течение 1–3 дней'
+        : '';
+      return `${booking.statusLabel}${refund ? ` · ${refund}` : ''}`;
+    }
+    case 'pending_payment':
+      return 'Ожидает оплаты';
+    default:
+      return 'Проверяем бронирование · подтвердим в течение 24 часов';
+  }
+}
 
 type OrderDetailsParams = {
   orderId?: number | string;
@@ -68,6 +101,7 @@ export const OrderDetailsScreen: React.FC = () => {
   }, [orderIdParam, initialOrder]);
 
   const pkg = useMemo(() => getPackageData(order || undefined), [order]);
+  const totusBooking = useMemo(() => getTotusBooking(order), [order]);
 
   const handlePaySbp = useCallback(() => {
     const id = order?.order_id ?? order?.id;
@@ -76,15 +110,25 @@ export const OrderDetailsScreen: React.FC = () => {
     }
   }, [nav, order]);
 
-  const showPay = order ? isOrderAwaitingPayment(order) && canPayWithSbp(order) : false;
+  const showPay = order
+    ? totusBooking
+      ? totusBooking.status === 'pending_payment' && canPayWithSbp(order)
+      : isOrderAwaitingPayment(order) && canPayWithSbp(order)
+    : false;
   const isCancelled = order ? isOrderCancelled(order, pkg) : false;
   const paymentSectionTitle = showPay ? 'К оплате' : isCancelled ? 'Отменено' : 'Оплачено';
 
-  const statusColor = order ? getStatusColor(pkg, order) : ORDER_STATUS_COLORS.pending;
+  const statusColor = totusBooking
+    ? getTotusBookingStatusColor(totusBooking.status)
+    : order
+      ? getStatusColor(pkg, order)
+      : ORDER_STATUS_COLORS.pending;
   const orderId = order?.order_id ?? order?.id ?? '—';
   const headerOrderId = orderIdParam !== undefined && orderIdParam !== null ? orderIdParam : '—';
   const price = formatPrice(pkg?.price ?? pkg?.full_price ?? order?.package?.price);
-  const statusLabel = order ? getStatusLabel(order, pkg) : 'Статус заказа';
+  const statusLabel = totusBooking ? totusBooking.statusLabel : order ? getStatusLabel(order, pkg) : 'Статус заказа';
+  const headerSubtitle = totusBooking ? getTotusHeaderSubtitle(totusBooking) : order ? statusLabel : undefined;
+  const orderWord = totusBooking ? 'Заказ' : 'Тур';
 
   const hotelName = pkg?.hotel?.name || '';
   const destination = [pkg?.hotel?.city, pkg?.hotel?.country].filter(Boolean).join(', ');
@@ -107,7 +151,7 @@ export const OrderDetailsScreen: React.FC = () => {
 
   return (
     <>
-      <PageHeader title={`Тур № ${headerOrderId}`} subtitle={order ? statusLabel : undefined} back />
+      <PageHeader title={`${orderWord} № ${headerOrderId}`} subtitle={headerSubtitle} back />
       <div className="page-body">
         {loading && !order ? (
           <div className="order-details">
@@ -128,46 +172,56 @@ export const OrderDetailsScreen: React.FC = () => {
           <div className="order-details">
             <div className="card card--shadow order-details__card">
               <div className="order-card__header">
-                <div className="order-card__title">Тур № {orderId}</div>
+                <div className="order-card__title">
+                  {orderWord} № {orderId}
+                </div>
                 <span className="order-status" style={{ background: statusColor }}>
-                  {statusLabel}
+                  {totusBooking ? getTotusBookingShortLabel(totusBooking.status) : statusLabel}
                 </span>
               </div>
 
-              <div className="order-panel">
-                <div className="order-panel__section">
-                  <div className="order-panel__title">Получение заказа</div>
-                  <div className="order-panel__subtitle">Отправим документы на {documentsEmail || '—'}</div>
-                </div>
-
-                <div className="order-panel__section">
-                  <div className="order-panel__title">{paymentSectionTitle}</div>
-                  <div className="order-panel__subtitle">
-                    {hotelName ? `Тур в ${hotelName}` : 'Данные уточняются'}
-                    {destination ? `, ${destination}` : ''}
+              {totusBooking ? (
+                <TotusBookingSummary
+                  booking={totusBooking}
+                  tourists={order.package?.tourists}
+                  fallbackAmount={pkg?.price ?? pkg?.full_price ?? order?.package?.price ?? null}
+                />
+              ) : (
+                <div className="order-panel">
+                  <div className="order-panel__section">
+                    <div className="order-panel__title">Получение заказа</div>
+                    <div className="order-panel__subtitle">Отправим документы на {documentsEmail || '—'}</div>
                   </div>
-                  <div className="order-panel__subtitle">{price}</div>
-                </div>
 
-                <div className="order-panel__section">
-                  <div className="order-panel__title">Туристы</div>
-                  <div className="order-panel__tourists">
-                    {order.package.tourists.map((tourist: any, index: number) => (
-                      <div key={tourist.id ?? index}>
-                        <div className="order-panel__subtitle">
-                          {tourist.name} {tourist.surname}, {tourist.birthday} , До: {tourist.passport_expires_on}
+                  <div className="order-panel__section">
+                    <div className="order-panel__title">{paymentSectionTitle}</div>
+                    <div className="order-panel__subtitle">
+                      {hotelName ? `Тур в ${hotelName}` : 'Данные уточняются'}
+                      {destination ? `, ${destination}` : ''}
+                    </div>
+                    <div className="order-panel__subtitle">{price}</div>
+                  </div>
+
+                  <div className="order-panel__section">
+                    <div className="order-panel__title">Туристы</div>
+                    <div className="order-panel__tourists">
+                      {order.package.tourists.map((tourist: any, index: number) => (
+                        <div key={tourist.id ?? index}>
+                          <div className="order-panel__subtitle">
+                            {tourist.name} {tourist.surname}, {tourist.birthday} , До: {tourist.passport_expires_on}
+                          </div>
+                          <div className="order-panel__subtitle">паспорт: {tourist.passport || ''}</div>
                         </div>
-                        <div className="order-panel__subtitle">паспорт: {tourist.passport || ''}</div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="order-panel__section order-panel__section--last">
+                    <div className="order-panel__title">Итого</div>
+                    <div className="order-panel__amount">{price}</div>
                   </div>
                 </div>
-
-                <div className="order-panel__section order-panel__section--last">
-                  <div className="order-panel__title">Итого</div>
-                  <div className="order-panel__amount">{price}</div>
-                </div>
-              </div>
+              )}
 
               {showPay ? (
                 <div className="order-card__pay">
@@ -182,6 +236,7 @@ export const OrderDetailsScreen: React.FC = () => {
               destination={destination}
               order={order}
               apiDocuments={apiDocuments}
+              totusBooking={totusBooking}
             />
           </div>
         )}

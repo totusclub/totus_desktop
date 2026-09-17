@@ -7,6 +7,7 @@ import {
   getDocumentName,
   type OrderDocumentApiItem,
 } from '@shared/utils/ordersUtils';
+import { formatTotusMoney, formatTotusStayPeriod, type TotusBooking } from '@shared/utils/totusBooking';
 import { Icon } from '../../icons';
 import { ChevronRightIcon } from '../../components/uiIcons';
 import { openExternal } from '../../lib/desktop';
@@ -14,6 +15,8 @@ import { FlightDetailsModal } from '../checkout/FlightDetailsModal';
 
 // Порт component/orders/order/OrderDetailsSections.tsx (+ InfoRow, DocumentsModal): правая колонка деталей заказа —
 // «Документы» (список; клик → openExternal), «Самое важное», «Отель и номер».
+// Внутренний заказ (totusBooking): ваучер из totus_booking.voucher добавляется к документам /orders/documents,
+// «Туроператор» — из totus_booking.operator (Arlekino), без перелёта (модалка рейса не открывается).
 
 type Props = {
   pkg: any;
@@ -21,7 +24,28 @@ type Props = {
   destination: string;
   order: Order | null;
   apiDocuments?: OrderDocumentApiItem[];
+  totusBooking?: TotusBooking | null;
 };
+
+/** Описание блока «Документы» для внутреннего заказа (макет: «Чек об оплате · ваучер появится после подтверждения»). */
+function getTotusDocumentsDescription(booking: TotusBooking, count: number): string {
+  if (booking.status === 'confirmed') {
+    if (count > 0) return formatDocumentsDescription(count);
+    return 'Ваучер пришлём на e-mail и добавим сюда';
+  }
+  if (booking.status === 'rejected' || booking.status === 'cancelled') {
+    const refund = formatTotusMoney(booking.refund?.amount ?? booking.paidAmount ?? booking.finalPrice);
+    const refundLine = refund
+      ? booking.refund?.status === 'done'
+        ? `Возврат ${refund} выполнен`
+        : `Возврат ${refund} выполним вручную в течение 1–3 дней`
+      : '';
+    return [count > 0 ? formatDocumentsDescription(count) : '', refundLine].filter(Boolean).join(' · ') || 'Документов нет';
+  }
+  return count > 0
+    ? `${formatDocumentsDescription(count)} · ваучер появится после подтверждения`
+    : 'Ваучер появится после подтверждения бронирования';
+}
 
 type InfoRowProps = {
   label: string;
@@ -54,11 +78,41 @@ const InfoRow: React.FC<InfoRowProps> = ({ label, value, rightValue, showArrow, 
   return <div className="order-info">{content}</div>;
 };
 
-export const OrderDetailsSections: React.FC<Props> = ({ pkg, hotelName, destination, order, apiDocuments = [] }) => {
+export const OrderDetailsSections: React.FC<Props> = ({
+  pkg,
+  hotelName,
+  destination,
+  order,
+  apiDocuments = [],
+  totusBooking = null,
+}) => {
   const [flightModalVisible, setFlightModalVisible] = useState(false);
 
-  const documents = useMemo(() => collectOrderDocuments(order, apiDocuments), [order, apiDocuments]);
-  const documentsDescription = useMemo(() => formatDocumentsDescription(documents.length), [documents.length]);
+  const documents = useMemo(
+    () =>
+      collectOrderDocuments(
+        order,
+        totusBooking?.voucher?.url
+          ? [...apiDocuments, { title: totusBooking.voucher.title || 'Ваучер', url: totusBooking.voucher.url }]
+          : apiDocuments,
+      ),
+    [order, apiDocuments, totusBooking],
+  );
+  const documentsDescription = useMemo(
+    () =>
+      totusBooking
+        ? getTotusDocumentsDescription(totusBooking, documents.length)
+        : formatDocumentsDescription(documents.length),
+    [documents.length, totusBooking],
+  );
+
+  const periodValue = (totusBooking ? formatTotusStayPeriod(totusBooking) : '') || formatPeriod(pkg) || '—';
+  const operatorValue = totusBooking ? totusBooking.operator : 'Level.Travel';
+  const roomValue = (totusBooking ? totusBooking.room : '') || pkg?.room_type || '—';
+  const mealValue = totusBooking
+    ? [totusBooking.mealName, totusBooking.meal ? `(${totusBooking.meal})` : ''].filter(Boolean).join(' ') ||
+      pkg?.pansion_description
+    : pkg?.pansion_description;
 
   return (
     <>
@@ -92,11 +146,15 @@ export const OrderDetailsSections: React.FC<Props> = ({ pkg, hotelName, destinat
         <div className="order-section">
           <div className="order-section__header">Самое важное</div>
           <div className="order-info-panel">
-            <InfoRow label="Отель" value={formatPeriod(pkg) || '—'} showArrow onPress={() => setFlightModalVisible(true)} />
+            {totusBooking ? (
+              <InfoRow label="Отель" value={periodValue} />
+            ) : (
+              <InfoRow label="Отель" value={periodValue} showArrow onPress={() => setFlightModalVisible(true)} />
+            )}
             <div className="divider" />
             <InfoRow label="Курорт" value={destination || '—'} rightValue={pkg?.hotel?.country ? 'Виза не нужна' : undefined} />
             <div className="divider" />
-            <InfoRow label="Туроператор" value="Level.Travel" />
+            <InfoRow label="Туроператор" value={operatorValue} />
           </div>
         </div>
 
@@ -106,9 +164,9 @@ export const OrderDetailsSections: React.FC<Props> = ({ pkg, hotelName, destinat
           <div className="order-info-panel">
             <InfoRow label="Отель" value={hotelName || '—'} showArrow />
             <div className="divider" />
-            <InfoRow label="Номер" value={pkg?.room_type || '—'} showArrow />
+            <InfoRow label="Номер" value={roomValue} showArrow />
             <div className="divider" />
-            <InfoRow label="Питание" value={pkg?.pansion_description} />
+            <InfoRow label="Питание" value={mealValue} />
           </div>
         </div>
       </div>
