@@ -38,6 +38,8 @@ type Props = {
   initialSelectedDate?: string | null;
   /** Exact nights from hotel search — match kedam-WEB fixed-date rooming. */
   searchNights?: number | null;
+  /** Тип текущего поиска (package | hotel) — подпись «с перелётом»/«без перелёта» у цены номера. */
+  searchType?: string | null;
   aiRoomPick?: AiRoomPick | null;
 };
 
@@ -54,6 +56,7 @@ export const HotelRoomsSection = forwardRef<HTMLDivElement, Props>(
       onMoreDetails,
       initialSelectedDate,
       searchNights = null,
+      searchType = null,
       aiRoomPick = null,
     },
     ref,
@@ -159,7 +162,8 @@ export const HotelRoomsSection = forwardRef<HTMLDivElement, Props>(
                     offers[0] ?? resolveAiSelectedOffer(room, enrichedAiRoomPick, selectedDate)?.offer,
                   )
                 : null;
-              const hotelInfo = transformRoomToHotelInfo(room, selectedDate, offers);
+              // Room Type v3: «от» — минимум по всем offers на дату (Arlekino + Level.Travel), подпись по search_type.
+              const hotelInfo = transformRoomToHotelInfo(room, selectedDate, offers, searchType);
               const roomFeatures = getRoomFeatures(room, offers);
               return (
                 <HotelCard

@@ -128,7 +128,14 @@ export const useHotelRoomFilters = ({
     }
 
     if (!requestId || !hotelId || !activeRoomFilters) return;
-    if (!hasHotelRoomsQueryParams(filterQueryParams)) return;
+    if (!hasHotelRoomsQueryParams(filterQueryParams)) {
+      // Только клиентские фильтры (например, оператор «Arlekino», которого нет в LT):
+      // API не зовём, а прошлый отфильтрованный ответ сбрасываем — фильтруем базовые номера.
+      setFilterApiRooms(null);
+      lastFilterRequestKeyRef.current = null;
+      setFiltersLoading(false);
+      return;
+    }
     if (filterQueryKey === lastFilterRequestKeyRef.current) return;
 
     setFiltersLoading(true);

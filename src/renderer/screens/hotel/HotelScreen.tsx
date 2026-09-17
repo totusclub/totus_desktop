@@ -303,6 +303,7 @@ export const HotelScreen: React.FC = () => {
           onMoreDetails={handleRoomDetailsOpen}
           initialSelectedDate={searchSnapshot?.startDateISO || null}
           searchNights={searchSnapshot?.nights ?? null}
+          searchType={hotelSearchType}
           aiRoomPick={aiRoomPick}
         />
 
