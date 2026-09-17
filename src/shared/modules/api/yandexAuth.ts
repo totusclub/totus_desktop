@@ -21,9 +21,13 @@ function apiOrigin(): string {
   return String(instance.defaults.baseURL || 'https://api.totus.club').replace(/\/+$/, '');
 }
 
-/** Адрес для внешнего браузера: сервер сам редиректит на oauth.yandex.ru. */
-export function yandexStartUrl(): string {
-  return `${apiOrigin()}/api/auth/yandex/start?client=desktop&return=%2F`;
+/**
+ * Адрес для внешнего браузера: сервер сам редиректит на oauth.yandex.ru.
+ * force — повтор после «почта не выдана»: Яндекс снова покажет экран прав.
+ */
+export function yandexStartUrl(options: {force?: boolean} = {}): string {
+  const force = options.force ? '&force=1' : '';
+  return `${apiOrigin()}/api/auth/yandex/start?client=desktop&return=%2F${force}`;
 }
 
 export async function yandexExchange(ticket: string): Promise<IYandexExchangeResult> {
