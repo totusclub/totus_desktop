@@ -9,6 +9,10 @@ export type DesktopApi = {
   onSystemThemeChanged: (cb: (mode: ThemeName) => void) => () => void;
   getCaptcha: () => Promise<{ url: string; partition: string; preload: string }>;
   setBadgeCount: (count: number) => Promise<boolean>;
+  /** Deep link totus://… — возврат из браузера после входа через Яндекс ID. */
+  onDeepLink?: (cb: (url: string) => void) => () => void;
+  /** Ссылка, пришедшая до того, как renderer успел подписаться (холодный старт). */
+  takeDeepLink?: () => Promise<string | null>;
 };
 
 declare global {
@@ -28,6 +32,8 @@ const fallback: DesktopApi = {
   onSystemThemeChanged: () => () => undefined,
   getCaptcha: async () => ({ url: '', partition: '', preload: '' }),
   setBadgeCount: async () => false,
+  onDeepLink: () => () => undefined,
+  takeDeepLink: async () => null,
 };
 
 export const desktop: DesktopApi = (typeof window !== 'undefined' && window.desktop) || fallback;
@@ -44,5 +50,23 @@ export function setBadgeCount(count: number): void {
     if (typeof fn === 'function') void fn(count).catch(() => undefined);
   } catch {
     /* ignore */
+  }
+}
+
+/** Подписка на deep link; старый preload без метода — пустая отписка. */
+export function onDeepLink(cb: (url: string) => void): () => void {
+  const fn = desktop.onDeepLink;
+  if (typeof fn !== 'function') return () => undefined;
+  return fn(cb);
+}
+
+/** Забрать ссылку, пришедшую до запуска renderer'а. */
+export async function takeDeepLink(): Promise<string | null> {
+  const fn = desktop.takeDeepLink;
+  if (typeof fn !== 'function') return null;
+  try {
+    return await fn();
+  } catch {
+    return null;
   }
 }
