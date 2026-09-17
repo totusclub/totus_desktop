@@ -28,6 +28,7 @@ import { LoginScreen } from '../screens/auth/LoginScreen';
 import { SignupScreen } from '../screens/auth/SignupScreen';
 import { VerificationScreen } from '../screens/auth/VerificationScreen';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
+import { YandexAuthBridge } from './YandexAuthBridge';
 
 // Маршруты = экраны totus_APP (navigation/authStack.tsx); имена см. app/navigation.ts.
 const RootRedirect: React.FC = () => (isOnboardingCompleted() ? <HomeScreen /> : <Navigate to="/onboarding" replace />);
@@ -64,6 +65,8 @@ export const App: React.FC = () => (
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>
+            {/* Возврат из браузера после входа через Яндекс ID (deep link totus://auth/yandex) */}
+            <YandexAuthBridge />
           </AiRoot>
         </HashRouter>
       </ThemeProvider>

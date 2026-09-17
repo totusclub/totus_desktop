@@ -5,6 +5,7 @@ import { loginUser } from '@shared/modules/store/actions/auth';
 import { ELoginDataType } from '@shared/modules/store/types/auth';
 import { useAppNavigation, useRouteParams } from '../../app/navigation';
 import { SmartCaptcha, YANDEX_SMARTCAPTCHA_SITEKEY, type CaptchaStatus } from '../../components/SmartCaptcha';
+import { YandexIdButton } from '../../components/YandexIdButton';
 import { AuthLayout } from './AuthLayout';
 import './auth.css';
 
@@ -142,6 +143,9 @@ export const LoginScreen: React.FC = () => {
         <button type="submit" className="btn btn--block" disabled={buttonDisabled}>
           {loading ? 'Отправка…' : 'Войти'}
         </button>
+
+        {/* Вход через Яндекс ID — появляется, только если раздел включён на сервере */}
+        <YandexIdButton />
       </form>
     </AuthLayout>
   );
