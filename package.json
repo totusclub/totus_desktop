@@ -15,8 +15,9 @@
     "build:renderer": "vite build",
     "build": "npm run build:electron && npm run build:renderer",
     "dist": "npm run build && electron-builder",
-    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac": "npm run check:entitlements && npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
+    "check:entitlements": "plutil -lint build/entitlements.mac.plist build/entitlements.mac.inherit.plist",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "lint": "eslint src electron --ext .ts,.tsx",
     "test": "vitest run"
@@ -65,8 +66,10 @@
       "target": ["dmg", "zip"],
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "notarize": false,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Микрофон нужен для звонков в поддержку Totus Club."
       }
