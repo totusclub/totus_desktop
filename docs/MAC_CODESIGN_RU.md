@@ -9,7 +9,7 @@
 | `build/entitlements.mac.plist` | основной бандл `Totus Club.app` | JIT и исполняемая память для V8, переменные dyld, отключение library validation, микрофон (звонки в поддержку), сетевой клиент |
 | `build/entitlements.mac.inherit.plist` | `Totus Club Helper*.app` | то же + `com.apple.security.inherit` — helper-процессы наследуют права родителя |
 
-Eelectron под hardened runtime требует оба набора. Раньше `entitlementsInherit`
+Electron под hardened runtime требует оба набора. Раньше `entitlementsInherit`
 указывал на основной файл — helper'ы подписывались без `com.apple.security.inherit`.
 
 Оба файла обязаны быть валидным XML plist в UTF-8 без BOM. Проверка:
