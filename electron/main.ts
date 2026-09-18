@@ -9,6 +9,11 @@ import { buildCaptchaHtml, CAPTCHA_PAGE_URL, CAPTCHA_PARTITION } from './captcha
 const isMac = process.platform === 'darwin';
 const DEV_URL = process.env.VITE_DEV_SERVER_URL;
 
+// Deep link: возврат из браузера после входа через Яндекс ID (totus://auth/yandex?ticket=…)
+const DEEP_LINK_SCHEME = 'totus';
+const DEEP_LINK_PREFIX = `${DEEP_LINK_SCHEME}://`;
+let pendingDeepLink: string | null = null;
+
 type TitleBarTheme = { background: string; symbol: string };
 const TITLE_BAR: Record<'light' | 'dark', TitleBarTheme> = {
   light: { background: '#FFFFFF', symbol: '#1F1F1F' },
@@ -22,6 +27,31 @@ function openExternalSafe(url: string): void {
   if (/^(https:|mailto:|tel:)/i.test(url)) {
     void shell.openExternal(url);
   }
+}
+
+/** Пришёл totus://… — поднимаем окно и отдаём ссылку renderer'у (или придерживаем до старта). */
+function handleDeepLink(url?: string | null): void {
+  if (!url || !url.startsWith(DEEP_LINK_PREFIX)) return;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    mainWindow.webContents.send('desktop:deep-link', url);
+  } else {
+    pendingDeepLink = url;
+  }
+}
+
+function deepLinkFromArgv(argv: string[]): string | undefined {
+  return argv.find(arg => typeof arg === 'string' && arg.startsWith(DEEP_LINK_PREFIX));
+}
+
+function registerProtocolClient(): void {
+  // В dev запуск идёт через electron + путь к проекту — схему нужно регистрировать с этими аргументами.
+  if (process.defaultApp && process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME, process.execPath, [path.resolve(process.argv[1])]);
+    return;
+  }
+  app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME);
 }
 
 // SmartCaptcha должна открываться с origin https://totus.club (как в приложении: WebView с baseUrl).
@@ -121,6 +151,12 @@ ipcMain.handle('desktop:set-badge-count', (_e, n: unknown) => {
     return false;
   }
 });
+// Deep link, пришедший до того, как renderer успел подписаться (холодный старт по ссылке).
+ipcMain.handle('desktop:take-deep-link', () => {
+  const url = pendingDeepLink;
+  pendingDeepLink = null;
+  return url;
+});
 
 nativeTheme.on('updated', () => {
   mainWindow?.webContents.send('desktop:system-theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
@@ -145,14 +181,40 @@ function registerPermissionHandlers(): void {
   }
 }
 
-app.whenReady().then(() => {
-  registerCaptchaProtocol();
-  registerPermissionHandlers();
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+// Второй запуск (Windows/Linux открывают totus:// новым процессом) — передаём ссылку первому и выходим.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+
+if (!gotSingleInstanceLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (_event, argv) => {
+    handleDeepLink(deepLinkFromArgv(argv));
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
   });
-});
+
+  // macOS отдаёт ссылку событием open-url (в том числе до whenReady).
+  app.on('open-url', (event, url) => {
+    event.preventDefault();
+    handleDeepLink(url);
+  });
+
+  app.whenReady().then(() => {
+    registerProtocolClient();
+    registerCaptchaProtocol();
+    registerPermissionHandlers();
+    createWindow();
+    // Холодный старт по ссылке на Windows/Linux: ссылка приходит аргументом командной строки.
+    const initialLink = deepLinkFromArgv(process.argv);
+    if (initialLink) pendingDeepLink = initialLink;
+
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
 
 app.on('window-all-closed', () => {
   if (!isMac) app.quit();

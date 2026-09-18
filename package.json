@@ -57,6 +57,9 @@
     "productName": "Totus Club",
     "directories": { "output": "release" },
     "files": ["dist/**", "dist-electron/**", "package.json"],
+    "protocols": [
+      { "name": "Totus Club", "schemes": ["totus"] }
+    ],
     "mac": {
       "category": "public.app-category.travel",
       "target": ["dmg", "zip"],

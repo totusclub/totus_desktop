@@ -16,6 +16,13 @@ const desktop = {
     ipcRenderer.invoke('desktop:get-captcha'),
   // Бейдж непрочитанных уведомлений на иконке Dock (macOS) / taskbar (Windows, где поддерживается)
   setBadgeCount: (count: number): Promise<boolean> => ipcRenderer.invoke('desktop:set-badge-count', count),
+  // Deep link totus://… — возврат из браузера после входа через Яндекс ID
+  onDeepLink: (cb: (url: string) => void): (() => void) => {
+    const handler = (_e: unknown, url: string) => cb(url);
+    ipcRenderer.on('desktop:deep-link', handler);
+    return () => ipcRenderer.removeListener('desktop:deep-link', handler);
+  },
+  takeDeepLink: (): Promise<string | null> => ipcRenderer.invoke('desktop:take-deep-link'),
 };
 
 export type DesktopApi = typeof desktop;

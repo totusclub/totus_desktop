@@ -1,0 +1,104 @@
+/* Вход через Яндекс ID — кнопка и диалог возврата (макеты: claude/YANDEX_AUTH_DESIGN_RU.md).
+   Светлая тема — чёрная кнопка, тёмная — белая. */
+.yandex-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.yandex-divider > span {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.yandex-divider > p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+.yandex-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.yandex-btn:hover {
+  opacity: 0.9;
+}
+.yandex-btn__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #fc3f1d;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+[data-theme='dark'] .yandex-btn {
+  background: #ffffff;
+  color: #141414;
+}
+
+.yandex-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 20, 20, 0.55);
+}
+.yandex-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  border-radius: 20px;
+  background: var(--surface, #ffffff);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+.yandex-dialog h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 700;
+}
+.yandex-dialog p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 15px;
+  line-height: 22px;
+}
+.yandex-dialog__error {
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff0ed;
+  color: #73403a;
+}
+[data-theme='dark'] .yandex-dialog__error {
+  background: #3a1f1c;
+  color: #e2b9b3;
+}
+.yandex-dialog__skip {
+  align-self: center;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  cursor: pointer;
+}
