@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@shared/modules/store';
 import { useLoadHomeData } from '@shared/modules/hooks/loadHomeData';
@@ -8,10 +8,10 @@ import { buildRecommendedHotelRouteParams } from '@shared/utils/hotelUtils/recom
 import { useAppNavigation } from '../../app/navigation';
 import { SearchSection } from './SearchSection';
 import { RecommendTripCard, PopularDestinationCard } from './HomeCards';
-import { PasscodeModal } from './PasscodeModal';
 import './home.css';
 
 // Порт component/home/Home.tsx (+ PlaningTrip, PopularDestinationsList) — Figma «Desktop / Home».
+// Экрана ввода пароля (PasscodeModal, код 2103) больше нет (решение владельца 27.10.2026): главная открывается сразу.
 
 const CardSkeleton: React.FC<{ tall?: boolean }> = ({ tall }) => (
   <div className="home-card-skeleton" aria-hidden="true">
@@ -108,45 +108,15 @@ const PopularDestinationsList: React.FC<{ popularDestinations?: any[] | null; lo
 
 export const HomeScreen: React.FC = () => {
   const { homeData, loading } = useLoadHomeData();
-  const [isPasscodeVerified, setIsPasscodeVerified] = useState(false);
-  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
-
-  useEffect(() => {
-    let pinCode: string | null = null;
-    try {
-      pinCode = localStorage.getItem('pinCode');
-    } catch {
-      pinCode = null;
-    }
-    if (pinCode !== 'YES') setShowPasscodeModal(true);
-    if (pinCode === 'YES') setIsPasscodeVerified(true);
-  }, []);
-
-  const handlePasscodeVerified = () => {
-    setIsPasscodeVerified(true);
-    setShowPasscodeModal(false);
-    try {
-      localStorage.setItem('pinCode', 'YES');
-    } catch {
-      // ignore
-    }
-  };
 
   return (
-    <>
-      <PasscodeModal visible={showPasscodeModal} onVerified={handlePasscodeVerified} />
-      {isPasscodeVerified ? (
-        <div className="home">
-          <SearchSection title="Путешествия начинаются здесь" />
-          <div className="page-body home__body">
-            <PlaningTrip recommendHotels={homeData?.recomendHotels} loading={loading} />
-            <PopularDestinationsList popularDestinations={homeData?.popularDestinations} loading={loading} />
-          </div>
-        </div>
-      ) : (
-        <div className="home" />
-      )}
-    </>
+    <div className="home">
+      <SearchSection title="Путешествия начинаются здесь" />
+      <div className="page-body home__body">
+        <PlaningTrip recommendHotels={homeData?.recomendHotels} loading={loading} />
+        <PopularDestinationsList popularDestinations={homeData?.popularDestinations} loading={loading} />
+      </div>
+    </div>
   );
 };
 
