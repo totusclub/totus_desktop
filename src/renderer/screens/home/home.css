@@ -95,7 +95,6 @@
 .home-tourists__age-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .home-tourists__age-row:last-child { border-bottom: 0; }
 .home-tourists__age-label { font-size: 15px; color: var(--text); }
-.home-passcode__input { text-align: center; letter-spacing: 8px; font-size: 22px; }
 
 /* Карточки: «Начните планирование…» */
 .home-rec-card { display: flex; flex-direction: column; text-align: left; width: 100%; min-width: 0; border-radius: 16px; overflow: hidden; background: var(--card-background); box-shadow: var(--shadow-card); transition: box-shadow .15s; }
