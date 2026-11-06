@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, nativeTheme, shell, session, protocol, net, systemPreferences } from 'electron';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildCaptchaHtml, CAPTCHA_PAGE_URL, CAPTCHA_PARTITION } from './captcha';
 
 // Totus Club desktop — главный процесс.
@@ -68,6 +69,18 @@ function registerCaptchaProtocol(): void {
   });
 }
 
+/** preload webview допустим только наш captchaPreload.js (путь или file:-URL). Пустой preload тоже допустим. */
+function isCaptchaPreload(preload: unknown): boolean {
+  if (!preload) return true;
+  let given = String(preload);
+  try {
+    if (given.startsWith('file:')) given = fileURLToPath(given);
+  } catch {
+    return false;
+  }
+  return path.resolve(given) === path.resolve(path.join(__dirname, 'captchaPreload.js'));
+}
+
 function createWindow(): void {
   const theme: 'light' | 'dark' = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
   mainWindow = new BrowserWindow({
@@ -93,6 +106,25 @@ function createWindow(): void {
   });
 
   mainWindow.once('ready-to-show', () => mainWindow?.show());
+
+  // Единственный <webview> в приложении — капча (SmartCaptcha.tsx: src/partition/preload из desktop:get-captcha).
+  // Любой другой webview не создаётся; внутри капчи Node и доступ к контексту хоста всегда выключены
+  // (SECURITY_AUDIT_2026-11_RU.md, M9).
+  mainWindow.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    const src = String(params.src || '').split('#')[0];
+    const preloadOk = isCaptchaPreload(webPreferences.preload ?? (webPreferences as { preloadURL?: string }).preloadURL);
+    if (src !== CAPTCHA_PAGE_URL || params.partition !== CAPTCHA_PARTITION || !preloadOk) {
+      event.preventDefault();
+      return;
+    }
+    delete (webPreferences as { preloadURL?: string }).preloadURL;
+    webPreferences.nodeIntegration = false;
+    webPreferences.nodeIntegrationInSubFrames = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.webSecurity = true;
+    webPreferences.allowRunningInsecureContent = false;
+    webPreferences.experimentalFeatures = false;
+  });
 
   // Любые window.open / target=_blank → системный браузер.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
