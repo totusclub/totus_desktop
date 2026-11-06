@@ -29,6 +29,7 @@ import { SignupScreen } from '../screens/auth/SignupScreen';
 import { VerificationScreen } from '../screens/auth/VerificationScreen';
 import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { YandexAuthBridge } from './YandexAuthBridge';
+import { RequireBookingAuth } from './RequireBookingAuth';
 
 // Маршруты = экраны totus_APP (navigation/authStack.tsx); имена см. app/navigation.ts.
 const RootRedirect: React.FC = () => (isOnboardingCompleted() ? <HomeScreen /> : <Navigate to="/onboarding" replace />);
@@ -47,8 +48,9 @@ export const App: React.FC = () => (
                 <Route path="/hotel" element={<HotelScreen />} />
                 <Route path="/tickets" element={<TicketsScreen />} />
                 <Route path="/ticket-details" element={<TicketDetailsScreen />} />
-                <Route path="/booking" element={<BookingScreen />} />
-                <Route path="/checkout" element={<CheckoutScreen />} />
+                {/* Бронирование и оплата — только для вошедших; гость уходит на /login с возвратом к туру */}
+                <Route path="/booking" element={<RequireBookingAuth route="booking"><BookingScreen /></RequireBookingAuth>} />
+                <Route path="/checkout" element={<RequireBookingAuth route="checkout"><CheckoutScreen /></RequireBookingAuth>} />
                 <Route path="/pending-payment" element={<PendingPaymentScreen />} />
                 <Route path="/orders" element={<OrdersScreen />} />
                 <Route path="/orders/details" element={<OrderDetailsScreen />} />
